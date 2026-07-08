@@ -5,11 +5,16 @@
 pub mod web;
 
 use std::{
-    fs::{Permissions, read_to_string, set_permissions, write},
+    fs::{read_to_string, write},
     io::Result as IoResult,
-    os::unix::fs::PermissionsExt,
     path::Path,
     string::ToString,
+};
+
+#[cfg(unix)]
+use std::{
+    fs::{Permissions, set_permissions},
+    os::unix::fs::PermissionsExt,
 };
 
 use crate::errors::QobuzApiError::{self, CredentialsError};
