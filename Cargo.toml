@@ -4,7 +4,7 @@ edition = "2024"
 license = "GPL-3.0-or-later"
 name = "qobuz-api"
 repository = "https://github.com/loxoron218/qobuz-api"
-version = "1.0.1"
+version = "1.0.2"
 
 [dependencies]
 anyhow = { version = "1.0.103", default-features = false }
