@@ -4,10 +4,15 @@
 
 pub mod web;
 
+#[cfg(unix)]
 use std::{
-    fs::{Permissions, read_to_string, set_permissions, write},
-    io::Result as IoResult,
+    fs::{Permissions, set_permissions},
     os::unix::fs::PermissionsExt,
+};
+
+use std::{
+    fs::{read_to_string, write},
+    io::Result as IoResult,
     path::Path,
     string::ToString,
 };
