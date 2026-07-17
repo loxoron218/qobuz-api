@@ -83,9 +83,10 @@ fn extract_bundle_url(html: &str) -> Result<String, QobuzApiError> {
 ///
 /// The extracted `app_id`.
 fn extract_app_id_from_bundle(js: &str) -> Result<String, QobuzApiError> {
-    let re = Regex::new(r#"production:\{api:\{appId:"(\d+)""#).map_err(|e| CredentialsError {
-        message: format!("Invalid regex: {e}"),
-    })?;
+    let re =
+        Regex::new(r#"production:\{api:\{appId:"([0-9]+)""#).map_err(|e| CredentialsError {
+            message: format!("Invalid regex: {e}"),
+        })?;
 
     let caps = re.captures(js).ok_or_else(|| CredentialsError {
         message: "Could not find production appId in bundle JavaScript".to_string(),
