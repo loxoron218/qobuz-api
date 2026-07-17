@@ -108,6 +108,9 @@ mod tests {
         );
         let playlist = rt.block_on(get_playlist(&service, "pl42", None))?;
         ensure!(playlist.name.as_deref() == Some("My Playlist"));
+        let playlist = rt.block_on(get_playlist(&service, "pl42", Some("tracks")))?;
+        ensure!(playlist.name.as_deref() == Some("My Playlist"));
+        ensure!(playlist.tracks_count == Some(10));
         Ok(())
     }
 
@@ -122,21 +125,6 @@ mod tests {
         );
         let result = rt.block_on(search_playlists(&service, "fail", None, None));
         ensure!(result.is_err());
-        Ok(())
-    }
-
-    #[test]
-    fn get_playlist_with_extra() -> Result<()> {
-        setup_test!(
-            200,
-            r#"{"id":"pl42","name":"My Playlist","tracks_count":10}"#,
-            server,
-            service,
-            rt
-        );
-        let playlist = rt.block_on(get_playlist(&service, "pl42", Some("tracks")))?;
-        ensure!(playlist.name.as_deref() == Some("My Playlist"));
-        ensure!(playlist.tracks_count == Some(10));
         Ok(())
     }
 

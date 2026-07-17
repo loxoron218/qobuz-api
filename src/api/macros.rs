@@ -45,14 +45,30 @@ macro_rules! retry_body {
 /// Delegates to an async function with automatic credential refresh on signature errors.
 macro_rules! delegate_with_retry {
     ($vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path) => {
+        delegate_with_retry!(
+            @inner $vis fn $name -> $ret = $path,
+            fn_args: ($(, $arg: $ty)*),
+            first: ($($arg),*),
+            retry: ($($arg),*)
+        );
+    };
+    ($vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path, cancel: $cancel_ty:ty) => {
+        delegate_with_retry!(
+            @inner $vis fn $name -> $ret = $path,
+            fn_args: ($(, $arg: $ty)*, cancel: $cancel_ty),
+            first: ($($arg),*, cancel.clone()),
+            retry: ($($arg),*, cancel)
+        );
+    };
+    (@inner $vis:vis fn $name:ident -> $ret:ty = $path:path, fn_args: ($($fn_args:tt)*), first: ($($first:tt)*), retry: ($($retry:tt)*)) => {
         #[doc = concat!("Delegates to [`", stringify!($path), "`] with auto-refresh on signature errors.")]
         #[doc = ""]
         #[doc = "# Errors"]
         #[doc = ""]
         #[doc = "Returns a `QobuzApiError` if not authenticated, the API request fails, or refresh fails."]
-        $vis fn $name(&mut self $(, $arg: $ty)*) -> Result<$ret, crate::errors::QobuzApiError> {
+        $vis fn $name(&mut self $($fn_args)*) -> Result<$ret, crate::errors::QobuzApiError> {
             let rt = tokio::runtime::Runtime::new()?;
-            retry_body!($path, rt, self, first: ($($arg),*), retry: ($($arg),*))
+            retry_body!($path, rt, self, first: ($($first)*), retry: ($($retry)*))
         }
     };
 }
@@ -60,14 +76,6 @@ macro_rules! delegate_with_retry {
 /// Delegates to an async function with auto-refresh and a cancel parameter.
 macro_rules! delegate_with_retry_cancellable {
     ($vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path, cancel: $cancel_ty:ty) => {
-        #[doc = concat!("Delegates to [`", stringify!($path), "`] with auto-refresh on signature errors.")]
-        #[doc = ""]
-        #[doc = "# Errors"]
-        #[doc = ""]
-        #[doc = "Returns a `QobuzApiError` if not authenticated, the API request fails, or refresh fails."]
-        $vis fn $name(&mut self $(, $arg: $ty)*, cancel: $cancel_ty) -> Result<$ret, crate::errors::QobuzApiError> {
-            let rt = tokio::runtime::Runtime::new()?;
-            retry_body!($path, rt, self, first: ($($arg),*, cancel.clone()), retry: ($($arg),*, cancel))
-        }
+        delegate_with_retry!($vis fn $name($($arg: $ty),*) -> $ret = $path, cancel: $cancel_ty);
     };
 }

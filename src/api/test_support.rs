@@ -26,9 +26,7 @@ macro_rules! assert_empty_search_test {
         let server = $crate::api::test_support::MockServer::start(200, $body)?;
         let service = $crate::api::test_support::make_service(&server.base_url())?;
         let rt = ::tokio::runtime::Runtime::new()?;
-        let result = rt.block_on($search_fn(&service, $query, None, None))?;
-        let items = result.items.ok_or_else(|| ::anyhow::anyhow!("no items"))?;
-        ::anyhow::ensure!(items.is_empty());
+        $crate::assert_empty_search!(rt.block_on($search_fn(&service, $query, None, None)));
     }};
 }
 
