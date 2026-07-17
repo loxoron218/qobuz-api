@@ -7,17 +7,17 @@ repository = "https://github.com/loxoron218/qobuz-api"
 version = "1.0.1"
 
 [dependencies]
-anyhow = "1.0.102"
+anyhow = "1.0.103"
 base64 = "0.22.1"
 lofty = { version = "0.24.0", default-features = false }
 md-5 = { version = "0.11.0", default-features = false }
 rayon = "1.12.0"
-regex = "1.12.3"
-reqwest = { version = "0.13.3", features = ["form", "json", "query", "stream"] }
+regex = "1.13.1"
+reqwest = { version = "0.13.4", features = ["form", "json", "query", "stream"] }
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
+serde_json = "1.0.150"
 thiserror = "2.0.18"
-tokio = { version = "1.52.3", features = [
+tokio = { version = "1.53.0", features = [
     "fs",
     "macros",
     "rt",
