@@ -1,7 +1,7 @@
 //! Basic metadata field embedding: title, album, genre, dates, ISRC, copyright, cover art, etc.
 
 use lofty::{
-    ogg::VorbisComments,
+    ogg::tag::VorbisComments,
     picture::{MimeType::Jpeg, Picture, PictureType::CoverFront},
     tag::{
         Accessor,

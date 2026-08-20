@@ -10,7 +10,7 @@ use {
     lofty::{
         config::WriteOptions,
         file::{FileType::Flac, TaggedFileExt},
-        ogg::VorbisComments,
+        ogg::tag::VorbisComments,
         probe::Probe,
         tag::{Tag, TagExt},
     },
