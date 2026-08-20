@@ -4,7 +4,7 @@ use std::hint::black_box;
 
 use {
     criterion::{Criterion, criterion_group, criterion_main},
-    serde_json::{Result, Value, from_str},
+    serde_json::{Value, from_str},
 };
 
 use qobuz_api::signing::{sign_request, sign_track_file_url};
@@ -51,7 +51,7 @@ fn bench_search_deserialization(criterion: &mut Criterion) {
 
     criterion.bench_function("search_result_deserialization", |b| {
         b.iter(|| {
-            let _: Result<Value> = from_str(black_box(json));
+            black_box(from_str::<Value>(black_box(json)).unwrap_or_default());
         });
     });
 }

@@ -34,7 +34,7 @@ pub struct Artist {
 }
 
 /// Artist biography text.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Biography {
     /// Biography text content.
     pub text: Option<String>,

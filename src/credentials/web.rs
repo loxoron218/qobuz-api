@@ -175,7 +175,7 @@ fn extract_app_secret_from_bundle(js: &str) -> Result<String, QobuzApiError> {
         });
     }
 
-    let truncate_len = base64_encoded.len() - 44;
+    let truncate_len = base64_encoded.len().saturating_sub(44);
     base64_encoded.truncate(truncate_len);
 
     let decoded = STANDARD

@@ -230,13 +230,16 @@ fn env_var_or(key: &str, default: &str) -> String {
 
 /// Reads an environment variable from the cached `.env` file, falling back to
 /// process environment variables.
-fn env_var_opt(key: &str) -> Option<String> {
+pub fn env_var_opt(key: &str) -> Option<String> {
     if let Some(map) = ENV_MAP.get()
         && let Some(value) = map.get(key)
     {
         return Some(value.clone());
     }
-    var(key).ok()
+    let Ok(value) = var(key) else {
+        return None;
+    };
+    Some(value)
 }
 
 /// Loads and caches the `.env` file at `path`, returning an error on I/O failure.

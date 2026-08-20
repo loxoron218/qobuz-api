@@ -123,9 +123,8 @@ fn collect_performer_artists(
         return;
     };
     for name in extract_artist_names_from_performers(performers, seen) {
-        if !seen.contains(&name) {
-            names.push(name.clone());
-            seen.insert(name);
+        if seen.insert(name.clone()) {
+            names.push(name);
         }
     }
 }

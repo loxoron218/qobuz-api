@@ -83,7 +83,7 @@ mod tests {
         let result = rt.block_on(search_playlists(&service, "Jazz", Some(5), None))?;
         let items = result.items.ok_or_else(|| anyhow!("no items"))?;
         ensure!(items.len() == 1);
-        ensure!(items[0].name.as_deref() == Some("Jazz Mix"));
+        ensure!(items.first().and_then(|i| i.name.as_deref()) == Some("Jazz Mix"));
         Ok(())
     }
 

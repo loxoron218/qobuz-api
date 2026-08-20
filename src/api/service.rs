@@ -222,12 +222,12 @@ impl QobuzApiService {
     ///
     /// `true` if credentials have been refreshed.
     #[must_use]
-    pub fn is_credentials_refreshed(&self) -> bool {
+    pub const fn is_credentials_refreshed(&self) -> bool {
         self.credentials_refreshed
     }
 
     /// Marks credentials as refreshed.
-    pub fn mark_credentials_refreshed(&mut self) {
+    pub const fn mark_credentials_refreshed(&mut self) {
         self.credentials_refreshed = true;
     }
 

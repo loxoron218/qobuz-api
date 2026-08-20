@@ -14,10 +14,12 @@ use md5::{Digest, Md5};
 #[must_use]
 pub fn to_hex(bytes: &[u8]) -> String {
     const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";
-    let mut s = String::with_capacity(bytes.len() * 2);
+    let mut s = String::with_capacity(bytes.len().saturating_mul(2));
     for &b in bytes {
-        s.push(char::from(HEX_CHARS[(b >> 4) as usize]));
-        s.push(char::from(HEX_CHARS[(b & 0x0F) as usize]));
+        let hi = usize::from(b >> 4);
+        let lo = usize::from(b & 0x0F);
+        s.push(char::from(HEX_CHARS.get(hi).copied().unwrap_or(b'0')));
+        s.push(char::from(HEX_CHARS.get(lo).copied().unwrap_or(b'0')));
     }
     s
 }

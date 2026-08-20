@@ -363,7 +363,11 @@ fn determine_primary_date(meta: &ComprehensiveMetadata) -> (Option<String>, Opti
 ///
 /// The year as `Some(u32)`, or `None` if parsing fails.
 fn parse_year(date: &str) -> Option<u32> {
-    date.split('-').next()?.parse::<u32>().ok()
+    let year_str = date.split('-').next()?;
+    let Ok(year) = year_str.parse::<u32>() else {
+        return None;
+    };
+    Some(year)
 }
 
 /// Converts a Unix timestamp to a date string and year.
@@ -377,16 +381,31 @@ fn parse_year(date: &str) -> Option<u32> {
 /// A tuple of `(formatted_date_string, year)`.
 fn timestamp_to_date_and_year(timestamp: i64) -> (Option<String>, Option<u32>) {
     let days = timestamp.div_euclid(86400);
-    let z = days + 719_468;
+    let z = days.saturating_add(719_468);
     let era = z.div_euclid(146_097);
     let doe = z.rem_euclid(146_097);
-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
-    let y = yoe + era * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let d = doy - (153 * mp + 2) / 5 + 1;
-    let m = if mp < 10 { mp + 3 } else { mp - 9 };
-    let y = if m <= 2 { y + 1 } else { y };
+    let yoe = doe
+        .saturating_sub(doe / 1460)
+        .saturating_add(doe / 36_524)
+        .saturating_sub(doe / 146_096)
+        / 365;
+    let y = yoe.saturating_add(era.saturating_mul(400));
+    let doy = doe.saturating_sub(
+        (365_i64)
+            .saturating_mul(yoe)
+            .saturating_add(yoe / 4)
+            .saturating_sub(yoe / 100),
+    );
+    let mp = (5_i64).saturating_mul(doy).saturating_add(2) / 153;
+    let d = doy
+        .saturating_sub((153_i64).saturating_mul(mp).saturating_add(2) / 5)
+        .saturating_add(1);
+    let m = if mp < 10 {
+        mp.saturating_add(3)
+    } else {
+        mp.saturating_sub(9)
+    };
+    let y = if m <= 2 { y.saturating_add(1) } else { y };
     (
         Some(format!("{y:04}-{m:02}-{d:02}")),
         Some(y.try_into().unwrap_or(0)),

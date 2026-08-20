@@ -7,7 +7,7 @@ use crate::models::{
 };
 
 /// Simplified album artist info for metadata passing.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AlbumArtistBrief {
     /// Artist name.
     pub name: Option<String>,
@@ -20,7 +20,7 @@ pub struct AlbumArtistBrief {
 /// Carries raw data needed by the embedder for format-specific processing.
 /// The embedder performs complex extraction logic (artists from performers,
 /// composers, format-specific handling) based on this data.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComprehensiveMetadata {
     /// Track title.
     pub title: Option<String>,

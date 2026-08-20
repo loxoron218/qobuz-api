@@ -255,7 +255,7 @@ pub async fn retry_with_backoff(
 
         let status = response.status();
         if status.as_u16() == 429 {
-            let delay = BASE_BACKOFF_MS * 2u64.pow(attempt);
+            let delay = BASE_BACKOFF_MS.saturating_mul(2u64.pow(attempt));
             sleep(Duration::from_millis(delay)).await;
             last_error = Some(RateLimitError {
                 message: format!("Rate limited, retry {attempt}/{MAX_RETRIES}"),
@@ -315,7 +315,7 @@ fn urlencoding(s: &str) -> String {
         .map(|c| match c {
             ' ' => "+".to_string(),
             'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_' | '.' | '~' => c.to_string(),
-            _ => format!("%{:02X}", c as u32),
+            _ => format!("%{:02X}", u32::from(c)),
         })
         .collect()
 }

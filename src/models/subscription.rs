@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::models::credential::Credential;
 
 /// User subscription details.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Subscription {
     /// Subscription ID.
     pub id: Option<i32>,
@@ -22,7 +22,7 @@ pub struct Subscription {
 }
 
 /// A Qobuz user.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct User {
     /// User ID.
     pub id: Option<i32>,

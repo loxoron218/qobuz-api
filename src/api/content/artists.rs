@@ -119,7 +119,7 @@ mod tests {
         let result = rt.block_on(search_artists(&service, "Miles", Some(5), None))?;
         let items = result.items.ok_or_else(|| anyhow!("no items"))?;
         ensure!(items.len() == 1);
-        ensure!(items[0].name.as_deref() == Some("Miles Davis"));
+        ensure!(items.first().and_then(|i| i.name.as_deref()) == Some("Miles Davis"));
         Ok(())
     }
 
@@ -175,7 +175,7 @@ mod tests {
         let result = rt.block_on(get_release_list(&service, 42, Some(5), None))?;
         let items = result.items.ok_or_else(|| anyhow!("no items"))?;
         ensure!(items.len() == 1);
-        ensure!(items[0].title.as_deref() == Some("A Love Supreme"));
+        ensure!(items.first().and_then(|i| i.title.as_deref()) == Some("A Love Supreme"));
         Ok(())
     }
 }

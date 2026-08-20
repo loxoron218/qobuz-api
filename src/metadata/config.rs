@@ -6,7 +6,7 @@ use std::collections::HashSet;
 ///
 /// Uses a set of `MetadataField` variants. `Default` enables all fields except `Comment`.
 /// Use `is_enabled()` to check whether a field should be embedded.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MetadataConfig {
     /// Set of enabled metadata fields.
     enabled: HashSet<MetadataField>,

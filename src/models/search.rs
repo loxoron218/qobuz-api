@@ -19,7 +19,7 @@ pub struct ArtistSearchResponse {
 }
 
 /// Generic paginated result container.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct ItemSearchResult<T> {
     /// Result items.
     pub items: Option<Vec<T>>,

@@ -13,13 +13,11 @@
 
 mod test_support;
 
-use std::env::var;
-
 use anyhow::{Result, anyhow};
 
 use qobuz_api::api::service::QobuzApiService;
 
-use crate::test_support::ensure_env_credentials;
+use crate::test_support::{ensure_env_credentials, env_var_opt};
 
 /// User credentials loaded from the `.env` file.
 struct UserCredentials {
@@ -42,10 +40,10 @@ fn require_user_credentials() -> Result<UserCredentials> {
     ensure_env_credentials()?;
 
     Ok(UserCredentials {
-        email: var("QOBUZ_EMAIL").or_else(|_| var("QOBUZ_USERNAME")).ok(),
-        password: var("QOBUZ_PASSWORD").ok(),
-        user_id: var("QOBUZ_USER_ID").ok(),
-        user_auth_token: var("QOBUZ_USER_AUTH_TOKEN").ok(),
+        email: env_var_opt("QOBUZ_EMAIL").or_else(|| env_var_opt("QOBUZ_USERNAME")),
+        password: env_var_opt("QOBUZ_PASSWORD"),
+        user_id: env_var_opt("QOBUZ_USER_ID"),
+        user_auth_token: env_var_opt("QOBUZ_USER_AUTH_TOKEN"),
     })
 }
 

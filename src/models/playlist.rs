@@ -96,7 +96,7 @@ impl Playlist {
 }
 
 /// Playlist owner (returned by search endpoints).
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct PlaylistOwner {
     /// Owner user ID.
     pub id: Option<i32>,

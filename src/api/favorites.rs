@@ -283,7 +283,7 @@ mod tests {
         let albums = result.albums.ok_or_else(|| anyhow::anyhow!("no albums"))?;
         let items = albums.items.ok_or_else(|| anyhow::anyhow!("no items"))?;
         ensure!(items.len() == 1);
-        ensure!(items[0].title.as_deref() == Some("Fav Album"));
+        ensure!(items.first().and_then(|i| i.title.as_deref()) == Some("Fav Album"));
         Ok(())
     }
 

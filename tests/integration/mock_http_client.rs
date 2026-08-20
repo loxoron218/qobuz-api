@@ -4,7 +4,10 @@ use std::{future::Future, pin::Pin};
 
 use reqwest::Response;
 
-use qobuz_api::{api::http_client::HttpClient, errors::QobuzApiError};
+use qobuz_api::{
+    api::http_client::HttpClient,
+    errors::QobuzApiError::{self, UnexpectedApiResponseError},
+};
 
 type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
@@ -16,7 +19,7 @@ impl HttpClient for MockHttpClient {
         _url: &str,
         _params: &[(&str, &str)],
     ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
-        unimplemented!("mock not yet configured")
+        mock_not_configured()
     }
 
     fn post_form(
@@ -24,7 +27,7 @@ impl HttpClient for MockHttpClient {
         _url: &str,
         _params: &[(&str, &str)],
     ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
-        unimplemented!("mock not yet configured")
+        mock_not_configured()
     }
 
     fn get_with_auth(
@@ -33,8 +36,17 @@ impl HttpClient for MockHttpClient {
         _token: &str,
         _range: Option<&str>,
     ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
-        unimplemented!("mock not yet configured")
+        mock_not_configured()
     }
+}
+
+/// Builds a future that always fails with a "not configured" mock error.
+fn mock_not_configured() -> BoxFuture<'static, Result<Response, QobuzApiError>> {
+    Box::pin(async {
+        Err(UnexpectedApiResponseError {
+            message: "mock not yet configured".to_string(),
+        })
+    })
 }
 
 #[cfg(test)]

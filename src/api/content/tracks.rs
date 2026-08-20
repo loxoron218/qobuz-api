@@ -230,7 +230,7 @@ pub async fn download_track(
                 break;
             }
             Err(e) if is_retryable_network_error(&e) && attempt < MAX_DOWNLOAD_RETRIES => {
-                let delay = DOWNLOAD_RETRY_BASE_DELAY_MS * 2u64.pow(attempt);
+                let delay = DOWNLOAD_RETRY_BASE_DELAY_MS.saturating_mul(2u64.pow(attempt));
                 warn!(
                     track_id,
                     attempt,
@@ -299,7 +299,7 @@ mod tests {
         let result = rt.block_on(search_tracks(&service, "So What", Some(5), None))?;
         let items = result.items.ok_or_else(|| anyhow!("no items"))?;
         ensure!(items.len() == 1);
-        ensure!(items[0].title.as_deref() == Some("So What"));
+        ensure!(items.first().and_then(|i| i.title.as_deref()) == Some("So What"));
         Ok(())
     }
 

@@ -85,7 +85,7 @@ mod tests {
         let result = rt.block_on(search_albums(&service, "Test", Some(5), None))?;
         let items = result.items.ok_or_else(|| anyhow!("no items"))?;
         ensure!(items.len() == 1);
-        ensure!(items[0].title.as_deref() == Some("Test Album"));
+        ensure!(items.first().and_then(|i| i.title.as_deref()) == Some("Test Album"));
         Ok(())
     }
 

@@ -151,19 +151,13 @@ fn parse_env_line(line: &str) -> Option<(String, String)> {
 
 /// Strips surrounding single or double quotes from a value string.
 fn unquote(s: &str) -> &str {
-    let len = s.len();
-    if len < 2 {
-        return s;
-    }
-
-    let bytes = s.as_bytes();
-    if (bytes[0] == b'"' && bytes[len - 1] == b'"')
-        || (bytes[0] == b'\'' && bytes[len - 1] == b'\'')
-    {
-        &s[1..len - 1]
-    } else {
-        s
-    }
+    s.strip_prefix('"')
+        .and_then(|inner| inner.strip_suffix('"'))
+        .or_else(|| {
+            let inner = s.strip_prefix('\'')?;
+            inner.strip_suffix('\'')
+        })
+        .unwrap_or(s)
 }
 
 /// Parses a `.env` file and returns all key-value pairs.

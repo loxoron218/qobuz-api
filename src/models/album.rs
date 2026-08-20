@@ -87,7 +87,7 @@ impl Album {
     ///
     /// The file extension as a static string slice (`"mp3"` or `"flac"`).
     #[must_use]
-    pub fn extension_for_format(format_id: i32) -> &'static str {
+    pub const fn extension_for_format(format_id: i32) -> &'static str {
         match format_id {
             5 => "mp3",
             _ => "flac",
@@ -96,7 +96,7 @@ impl Album {
 }
 
 /// Music genre.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Genre {
     /// Genre ID.
     pub id: Option<i32>,
@@ -109,7 +109,7 @@ pub struct Genre {
 }
 
 /// Cover art URLs in multiple sizes.
-#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Image {
     /// Small thumbnail URL.
     pub small: Option<String>,
@@ -131,7 +131,7 @@ pub struct Image {
 }
 
 /// Record label.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Label {
     /// Label ID.
     pub id: Option<i32>,

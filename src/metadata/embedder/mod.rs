@@ -141,7 +141,7 @@ mod tests {
         anyhow::{Result as AnyhowResult, anyhow, ensure},
         lofty::{
             file::TaggedFileExt,
-            picture::PictureType::CoverFront,
+            picture::{Picture, PictureType::CoverFront},
             probe::Probe,
             tag::{Accessor, Tag},
         },
@@ -245,7 +245,7 @@ mod tests {
         embed_metadata_in_file(&path, &cover_art_metadata(), &MetadataConfig::all())?;
         let tag = get_tag(&path)?;
         ensure!(!tag.pictures().is_empty());
-        ensure!(tag.pictures()[0].pic_type() == CoverFront);
+        ensure!(tag.pictures().first().map(Picture::pic_type) == Some(CoverFront));
         Ok(())
     }
 
