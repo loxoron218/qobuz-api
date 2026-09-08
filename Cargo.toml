@@ -15,7 +15,7 @@ lofty = { version = "0.25.1", default-features = false, features = [
 md-5 = { version = "0.11.0", default-features = false }
 rayon = { version = "1.12.0", default-features = false }
 regex = { version = "1.13.1", default-features = false }
-reqwest = { version = "0.13.4", default-features = false, features = [
+reqwest = { version = "0.13.5", default-features = false, features = [
     "form",
     "query",
     "stream",
