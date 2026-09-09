@@ -17,6 +17,10 @@ use qobuz_api::{
 /// # Returns
 ///
 /// The track ID if found.
+///
+/// # Errors
+///
+/// Returns an error if the search fails or no track ID is found.
 pub fn find_track_id(service: &QobuzApiService, query: &str) -> Result<i32> {
     let search = service.search_tracks(query, Some(1), None)?;
     let items = search
@@ -40,6 +44,10 @@ pub fn find_track_id(service: &QobuzApiService, query: &str) -> Result<i32> {
 /// # Returns
 ///
 /// The album ID if found.
+///
+/// # Errors
+///
+/// Returns an error if the search fails or no album ID is found.
 pub fn find_album_id(service: &QobuzApiService, query: &str) -> Result<String> {
     let search = service.search_albums(query, Some(1), None)?;
     let items = search
@@ -67,6 +75,10 @@ pub fn find_album_id(service: &QobuzApiService, query: &str) -> Result<String> {
 /// # Returns
 ///
 /// The artist ID if found.
+///
+/// # Errors
+///
+/// Returns an error if the search fails or no artist ID is found.
 pub fn find_artist_id(service: &QobuzApiService, query: &str) -> Result<i32> {
     let search = service.search_artists(query, Some(1), None)?;
     let items = search
@@ -91,6 +103,10 @@ pub fn find_artist_id(service: &QobuzApiService, query: &str) -> Result<i32> {
 /// # Returns
 ///
 /// The album if found.
+///
+/// # Errors
+///
+/// Returns an error if the search fails or the album cannot be fetched.
 pub fn get_album_by_query(
     service: &QobuzApiService,
     query: &str,
@@ -111,6 +127,10 @@ pub fn get_album_by_query(
 /// # Returns
 ///
 /// The artist if found.
+///
+/// # Errors
+///
+/// Returns an error if the search fails or the artist cannot be fetched.
 pub fn get_artist_by_query(
     service: &QobuzApiService,
     query: &str,

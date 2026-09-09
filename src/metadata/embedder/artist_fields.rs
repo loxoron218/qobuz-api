@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use lofty::tag::{
     Accessor,
     ItemKey::{AlbumArtist, Composer, Producer},
-    ItemValue, Tag, TagItem,
+    Tag,
 };
 
 use crate::metadata::{
@@ -16,9 +16,12 @@ use crate::metadata::{
             Producer as ConfigProducer,
         },
     },
-    embedder::performers::{
-        extract_artist_names_from_performers, extract_composers_from_performers,
-        extract_producers_from_performers, is_duplicate_composer, normalize_composer_name,
+    embedder::{
+        performers::{
+            extract_artist_names_from_performers, extract_composers_from_performers,
+            extract_producers_from_performers, is_duplicate_composer, normalize_composer_name,
+        },
+        push_text,
     },
     extractor::ComprehensiveMetadata,
 };
@@ -31,7 +34,7 @@ use crate::metadata::{
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (affects separator and selection logic)
-pub fn apply_album_artist(
+pub(super) fn apply_album_artist(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -46,7 +49,7 @@ pub fn apply_album_artist(
         build_mp3_album_artist(meta)
     };
     if !name.is_empty() {
-        tag.push(TagItem::new(AlbumArtist, ItemValue::Text(name)));
+        push_text(tag, AlbumArtist, name);
     }
 }
 
@@ -137,7 +140,7 @@ fn collect_performer_artists(
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (affects separator)
-pub fn apply_artist(
+pub(super) fn apply_artist(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -150,18 +153,16 @@ pub fn apply_artist(
     let mut seen = HashSet::new();
     collect_performer_artists(meta, &mut names, &mut seen);
     if let Some(name) = meta.performer_name.as_ref()
-        && !seen.contains(name)
+        && seen.insert(name.clone())
     {
         names.push(name.clone());
-        seen.insert(name.clone());
     }
     for a in &meta.album_artists {
         if let Some(name) = a.name.as_ref()
             && !name.is_empty()
-            && !seen.contains(name)
+            && seen.insert(name.clone())
         {
             names.push(name.clone());
-            seen.insert(name.clone());
         }
     }
     if !names.is_empty() {
@@ -182,7 +183,7 @@ pub fn apply_artist(
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (affects composer selection)
-pub fn apply_composer(
+pub(super) fn apply_composer(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -197,7 +198,7 @@ pub fn apply_composer(
         build_mp3_composers(meta)
     };
     if !composers.is_empty() {
-        tag.push(TagItem::new(Composer, ItemValue::Text(composers.join("/"))));
+        push_text(tag, Composer, composers.join("/"));
     }
 }
 
@@ -283,9 +284,11 @@ fn collect_performer_composers(
         return;
     };
     for c in extract_composers_from_performers(performers) {
-        if c != "Various Composers" && !is_duplicate_composer(&c, normalized) {
-            composers.push(c.clone());
-            normalized.insert(normalize_composer_name(&c));
+        if c != "Various Composers"
+            && !is_duplicate_composer(&c, normalized)
+            && normalized.insert(normalize_composer_name(&c))
+        {
+            composers.push(c);
         }
     }
 }
@@ -298,7 +301,7 @@ fn collect_performer_composers(
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (producer tags are FLAC-only)
-pub fn apply_producer(
+pub(super) fn apply_producer(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -309,7 +312,7 @@ pub fn apply_producer(
     }
     if let Some(performers) = meta.performers.as_ref() {
         for producer in extract_producers_from_performers(performers) {
-            tag.push(TagItem::new(Producer, ItemValue::Text(producer)));
+            push_text(tag, Producer, producer);
         }
     }
 }

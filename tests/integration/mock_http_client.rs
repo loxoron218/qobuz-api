@@ -1,8 +1,8 @@
 //! Shared mock HTTP client for integration tests.
 
-use std::{future::Future, pin::Pin};
+use std::pin::Pin;
 
-use reqwest::Response;
+use {reqwest::Response, tracing::info};
 
 use qobuz_api::{
     api::http_client::HttpClient,
@@ -11,31 +11,49 @@ use qobuz_api::{
 
 type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
+/// Mock HTTP client failing all requests with a not-configured error.
+#[derive(Clone, Copy, Debug)]
 pub struct MockHttpClient;
 
 impl HttpClient for MockHttpClient {
     fn get(
         &self,
-        _url: &str,
-        _params: &[(&str, &str)],
+        url: &str,
+        params: &[(&str, &str)],
     ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
+        info!(
+            url,
+            param_count = params.len(),
+            "mock HTTP client received GET request"
+        );
         mock_not_configured()
     }
 
     fn post_form(
         &self,
-        _url: &str,
-        _params: &[(&str, &str)],
+        url: &str,
+        params: &[(&str, &str)],
     ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
+        info!(
+            url,
+            param_count = params.len(),
+            "mock HTTP client received POST request"
+        );
         mock_not_configured()
     }
 
     fn get_with_auth(
         &self,
-        _url: &str,
-        _token: &str,
-        _range: Option<&str>,
+        url: &str,
+        token: &str,
+        range: Option<&str>,
     ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
+        info!(
+            url,
+            token_len = token.len(),
+            has_range = range.is_some(),
+            "mock HTTP client received authenticated request"
+        );
         mock_not_configured()
     }
 }
@@ -51,7 +69,9 @@ fn mock_not_configured() -> BoxFuture<'static, Result<Response, QobuzApiError>> 
 
 #[cfg(test)]
 mod tests {
-    use super::{HttpClient, MockHttpClient};
+    use qobuz_api::api::http_client::HttpClient;
+
+    use crate::MockHttpClient;
 
     #[test]
     fn mock_http_client_implements_trait() {

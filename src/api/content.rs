@@ -5,21 +5,20 @@ pub mod albums;
 pub mod artist_download;
 pub mod artists;
 pub mod catalog;
+pub mod cover;
 pub mod download_io;
 pub mod playlist_download;
 pub mod playlists;
+pub mod stream;
 pub mod tracks;
 
-use std::{
-    future::Future,
-    sync::atomic::{AtomicBool, Ordering::Relaxed},
-};
+use std::sync::atomic::{AtomicBool, Ordering::Relaxed};
 
 use serde::de::DeserializeOwned;
 
 use crate::{
     api::{
-        requests::{self, RequestAuth},
+        requests::{RequestAuth, signed_get},
         service::QobuzApiService,
     },
     errors::QobuzApiError::{self, Canceled},
@@ -115,7 +114,7 @@ async fn do_signed_get<T: DeserializeOwned>(
 ) -> Result<T, QobuzApiError> {
     let token = service.require_auth_token()?;
 
-    requests::signed_get(
+    signed_get(
         service.http_client(),
         service.base_url(),
         endpoint,
@@ -221,4 +220,76 @@ pub async fn paginated<T: DeserializeOwned, I: ToString>(
     push_pagination_params(&mut params, limit, offset);
 
     do_signed_get(service, endpoint, &mut params).await
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::AtomicBool;
+
+    use {
+        anyhow::{Result, anyhow, ensure},
+        tokio::runtime::Runtime,
+    };
+
+    use crate::{
+        api::content::{check_cancel, fetch_with_cancel},
+        errors::QobuzApiError::{self, Canceled as CanceledVariant},
+    };
+
+    /// Tests cancellation check passes without a flag.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn check_cancel_without_flag_succeeds() -> Result<()> {
+        check_cancel(None)?;
+        Ok(())
+    }
+
+    /// Tests cancellation check fails when the flag is set.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn check_cancel_with_flag_fails() -> Result<()> {
+        let cancel = AtomicBool::new(true);
+        let result = check_cancel(Some(&cancel));
+        ensure!(result.is_err(), "expected canceled error");
+        let err = result.err().ok_or_else(|| anyhow!("expected error"))?;
+        ensure!(matches!(err, CanceledVariant), "expected Canceled variant");
+        Ok(())
+    }
+
+    /// Tests fetch wrapper returns the value when not cancelled.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn fetch_with_cancel_returns_value() -> Result<()> {
+        let rt = Runtime::new()?;
+        let value = rt.block_on(fetch_with_cancel(None, async || {
+            Ok::<i32, QobuzApiError>(7)
+        }))?;
+        ensure!(value == 7, "unexpected fetch value");
+        Ok(())
+    }
+
+    /// Tests fetch wrapper fails when cancelled before fetch.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn fetch_with_cancel_respects_cancel() -> Result<()> {
+        let cancel = AtomicBool::new(true);
+        let rt = Runtime::new()?;
+        let result = rt.block_on(fetch_with_cancel(Some(&cancel), async || {
+            Ok::<i32, QobuzApiError>(7)
+        }));
+        ensure!(result.is_err(), "expected canceled error");
+        Ok(())
+    }
 }

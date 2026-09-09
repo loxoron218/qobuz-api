@@ -37,6 +37,11 @@ mod tests {
 
     use crate::sanitize::sanitize_filename;
 
+    /// Tests sanitize replaces invalid characters.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sanitize_replaces_invalid_characters() -> Result<()> {
         ensure!(sanitize_filename("hello/world") == "hello_world");
@@ -44,24 +49,44 @@ mod tests {
         Ok(())
     }
 
+    /// Tests sanitize handles windows invalid chars.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sanitize_handles_windows_invalid_chars() -> Result<()> {
         ensure!(sanitize_filename("file<>|.txt") == "file___.txt");
         Ok(())
     }
 
+    /// Tests sanitize strips control characters.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sanitize_strips_control_characters() -> Result<()> {
         ensure!(sanitize_filename("hello\tworld\n") == "hello_world_");
         Ok(())
     }
 
+    /// Tests sanitize trims whitespace and dots.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sanitize_trims_whitespace_and_dots() -> Result<()> {
         ensure!(sanitize_filename("  ..hello..  ") == "hello");
         Ok(())
     }
 
+    /// Tests sanitize returns unnamed for empty string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sanitize_returns_unnamed_for_empty_string() -> Result<()> {
         ensure!(sanitize_filename("") == "unnamed");
@@ -70,6 +95,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests sanitize preserves valid filename.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sanitize_preserves_valid_filename() -> Result<()> {
         ensure!(sanitize_filename("track 01 - Title.flac") == "track 01 - Title.flac");

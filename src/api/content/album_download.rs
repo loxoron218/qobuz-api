@@ -3,23 +3,19 @@
 use std::{
     fs::{create_dir_all, metadata},
     path::{Path, PathBuf},
-    result::Result,
     sync::{Arc, atomic::AtomicBool},
 };
 
 use {
     tokio::{spawn, sync::Semaphore},
-    tracing::{debug, error, info, warn},
+    tracing::{error, info, warn},
 };
 
 use crate::{
     api::{
         content::{
-            albums::get_album,
-            check_cancel,
-            download_io::save_track_to_disk,
-            fetch_with_cancel,
-            tracks::{get_track, get_track_file_url_raw},
+            albums::get_album, check_cancel, download_io::save_track_to_disk, fetch_with_cancel,
+            stream::get_track_file_url_raw, tracks::get_track,
         },
         requests::{RequestAuth, download_stream},
         service::QobuzApiService,
@@ -93,6 +89,11 @@ fn prepare_album_directory(
 /// # Returns
 ///
 /// A vector of paths to the downloaded track files.
+///
+/// # Errors
+///
+/// Returns `QobuzApiError` if cancellation is requested, track download fails,
+/// or metadata embedding fails.
 async fn download_album_tracks(
     service: &QobuzApiService,
     track_ids: &[i32],
@@ -209,6 +210,10 @@ async fn download_album_tracks(
 /// # Returns
 ///
 /// `Ok(())` on success.
+///
+/// # Errors
+///
+/// Returns `QobuzApiError` if track fetching or metadata embedding fails.
 async fn embed_album_metadata(
     service: &QobuzApiService,
     album: &Album,
@@ -348,6 +353,10 @@ fn warn_if_not_resumed(had_offset: bool, resumed: bool, track_id: i32) {
 /// # Returns
 ///
 /// Cover art image bytes, or `None` if cover art is disabled or unavailable.
+///
+/// # Errors
+///
+/// Returns `QobuzApiError` if authentication is missing.
 async fn download_cover_data(
     service: &QobuzApiService,
     album: &Album,
@@ -363,13 +372,13 @@ async fn download_cover_data(
     let resp = match service.http_client().get_with_auth(&url, token, None).await {
         Ok(r) => r,
         Err(e) => {
-            debug!(error = %e, "Cover art download failed");
+            warn!(error = %e, "Cover art download failed");
             return Ok(None);
         }
     };
     match resp.bytes().await {
         Err(e) => {
-            debug!(error = %e, "Failed to read cover art bytes");
+            warn!(error = %e, "Failed to read cover art bytes");
             Ok(None)
         }
         Ok(b) => Ok(Some(b.to_vec())),

@@ -105,6 +105,11 @@ mod tests {
         to_hex(&Md5::digest(input.as_bytes()))
     }
 
+    /// Tests sign request produces deterministic hash.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sign_request_produces_deterministic_hash() -> Result<()> {
         let mut params = vec![
@@ -116,6 +121,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests sign request sorts params alphabetically.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sign_request_sorts_params_alphabetically() -> Result<()> {
         let mut params1 = vec![
@@ -137,6 +147,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests sign track file url produces correct format.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sign_track_file_url_produces_correct_format() -> Result<()> {
         let hash = sign_track_file_url(6, 12345, "1234567890", "mysecret");
@@ -146,6 +161,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests sign request empty params.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn sign_request_empty_params() -> Result<()> {
         let mut params: Vec<(String, String)> = vec![];

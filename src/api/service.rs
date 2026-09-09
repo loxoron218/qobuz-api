@@ -1,5 +1,7 @@
 //! Central API service holding authentication state and providing all operations.
 
+mod debug;
+
 use std::{env::VarError, path::Path};
 
 use {tokio::runtime::Runtime, tracing::info};
@@ -55,7 +57,6 @@ pub struct QobuzApiService {
 }
 
 impl QobuzApiService {
-    // Search
     delegate!(pub fn search_catalog(query: &str, limit: Option<i32>, offset: Option<i32>) -> SearchResult = search_catalog);
 
     delegate!(pub fn search_albums(query: &str, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Album>> = search_albums);
@@ -66,7 +67,6 @@ impl QobuzApiService {
 
     delegate!(pub fn search_playlists(query: &str, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Playlist>> = search_playlists);
 
-    // Browse
     delegate!(pub fn get_album(album_id: &str, extra: Option<&str>) -> Album = get_album);
 
     delegate!(pub fn get_artist(artist_id: i32, extra: Option<&str>) -> Artist = get_artist);
@@ -77,7 +77,6 @@ impl QobuzApiService {
 
     delegate!(pub fn get_release_list(artist_id: i32, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Album>> = get_release_list);
 
-    // Favorites
     delegate!(pub fn add_user_favorites(item_ids: &[i32], item_type: &str) -> () = add_user_favorites);
 
     delegate!(pub fn delete_user_favorites(item_ids: &[i32], item_type: &str) -> () = delete_user_favorites);
@@ -371,6 +370,16 @@ impl QobuzApiService {
 
 #[cfg(test)]
 impl QobuzApiService {
+    /// Creates a test service with a mock HTTP client.
+    ///
+    /// # Arguments
+    ///
+    /// * `client` - Boxed HTTP client for test requests.
+    /// * `base_url` - Base URL pointing at the mock server.
+    ///
+    /// # Returns
+    ///
+    /// A `QobuzApiService` configured for tests.
     #[must_use]
     pub fn new_test(client: Box<dyn HttpClient>, base_url: &str) -> Self {
         Self {

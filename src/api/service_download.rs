@@ -5,13 +5,14 @@ use std::{
     sync::{Arc, atomic::AtomicBool},
 };
 
+use {tokio::runtime::Runtime, tracing::info};
+
 use crate::{
     api::{
         content::{
-            album_download::download_album,
-            artist_download::download_artist,
-            playlist_download::download_playlist,
-            tracks::{download_track, get_track_file_url},
+            album_download::download_album, artist_download::download_artist,
+            playlist_download::download_playlist, stream::get_track_file_url,
+            tracks::download_track,
         },
         service::QobuzApiService,
     },
@@ -158,5 +159,187 @@ impl QobuzApiService {
         config: Option<&MetadataConfig>,
     ) -> Result<Vec<PathBuf>, QobuzApiError> {
         self.download_playlist_cancellable(playlist_id, format_id, output_dir, config, None)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::{Arc, atomic::AtomicBool};
+
+    use {
+        anyhow::{Result, ensure},
+        tempfile::TempDir,
+    };
+
+    use crate::{
+        api::{
+            service::QobuzApiService,
+            test_support::{MockServer, make_service, make_service_without_auth},
+        },
+        models::file_url::quality::{FLAC_16_44, FLAC_24_96, MP3_320},
+    };
+
+    /// Creates an authenticated mock service with a temp dir for download tests.
+    ///
+    /// # Returns
+    ///
+    /// Authenticated service and temp dir for download tests.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    fn authenticated_service_with_dir() -> Result<(QobuzApiService, TempDir)> {
+        let server = MockServer::start(200, "{}")?;
+        let service = make_service(&server.base_url())?;
+        let dir = TempDir::new()?;
+        Ok((service, dir))
+    }
+
+    /// Creates an unauthenticated mock service with a temp dir for download tests.
+    ///
+    /// # Returns
+    ///
+    /// Unauthenticated service and temp dir for download tests.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    fn unauthenticated_service_with_dir() -> Result<(QobuzApiService, TempDir)> {
+        let server = MockServer::start(200, "{}")?;
+        let service = make_service_without_auth(&server.base_url())?;
+        let dir = TempDir::new()?;
+        Ok((service, dir))
+    }
+
+    /// Tests file URL retrieval fails without authentication.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn get_track_file_url_requires_auth() -> Result<()> {
+        let server = MockServer::start(200, "{}")?;
+        let mut service = make_service_without_auth(&server.base_url())?;
+        let result = service.get_track_file_url(123, MP3_320);
+        ensure!(result.is_err(), "expected auth error without token");
+        Ok(())
+    }
+
+    /// Tests track download is cancelled when the flag is set.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_track_cancellable_returns_canceled() -> Result<()> {
+        let (mut service, dir) = authenticated_service_with_dir()?;
+        let cancel = AtomicBool::new(true);
+        let result =
+            service.download_track_cancellable(123, FLAC_16_44, dir.path(), None, Some(&cancel));
+        ensure!(result.is_err(), "expected canceled error");
+        Ok(())
+    }
+
+    /// Tests track download wrapper fails without authentication.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_track_requires_auth() -> Result<()> {
+        let (mut service, dir) = unauthenticated_service_with_dir()?;
+        let result = service.download_track(123, FLAC_24_96, dir.path(), None);
+        ensure!(result.is_err(), "expected auth error without token");
+        Ok(())
+    }
+
+    /// Tests album download is cancelled when the flag is set.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_album_cancellable_returns_canceled() -> Result<()> {
+        let (mut service, dir) = authenticated_service_with_dir()?;
+        let cancel = Arc::new(AtomicBool::new(true));
+        let result = service.download_album_cancellable(
+            "abc",
+            MP3_320,
+            dir.path(),
+            None,
+            None,
+            Some(cancel),
+        );
+        ensure!(result.is_err(), "expected canceled error");
+        Ok(())
+    }
+
+    /// Tests album download wrapper fails without authentication.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_album_requires_auth() -> Result<()> {
+        let (mut service, dir) = unauthenticated_service_with_dir()?;
+        let result = service.download_album("abc", MP3_320, dir.path(), None, None);
+        ensure!(result.is_err(), "expected auth error without token");
+        Ok(())
+    }
+
+    /// Tests artist download is cancelled when the flag is set.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_artist_cancellable_returns_canceled() -> Result<()> {
+        let (mut service, dir) = authenticated_service_with_dir()?;
+        let cancel = Arc::new(AtomicBool::new(true));
+        let result =
+            service.download_artist_cancellable(42, MP3_320, dir.path(), None, None, Some(cancel));
+        ensure!(result.is_err(), "expected canceled error");
+        Ok(())
+    }
+
+    /// Tests artist download wrapper fails without authentication.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_artist_requires_auth() -> Result<()> {
+        let (mut service, dir) = unauthenticated_service_with_dir()?;
+        let result = service.download_artist(42, MP3_320, dir.path(), None, None);
+        ensure!(result.is_err(), "expected auth error without token");
+        Ok(())
+    }
+
+    /// Tests playlist download is cancelled when the flag is set.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_playlist_cancellable_returns_canceled() -> Result<()> {
+        let (mut service, dir) = authenticated_service_with_dir()?;
+        let cancel = Arc::new(AtomicBool::new(true));
+        let result =
+            service.download_playlist_cancellable("pl123", MP3_320, dir.path(), None, Some(cancel));
+        ensure!(result.is_err(), "expected canceled error");
+        Ok(())
+    }
+
+    /// Tests playlist download wrapper fails without authentication.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn download_playlist_requires_auth() -> Result<()> {
+        let (mut service, dir) = unauthenticated_service_with_dir()?;
+        let result = service.download_playlist("pl123", MP3_320, dir.path(), None);
+        ensure!(result.is_err(), "expected auth error without token");
+        Ok(())
     }
 }

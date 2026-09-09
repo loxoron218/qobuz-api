@@ -202,17 +202,32 @@ mod tests {
         },
     };
 
+    /// Makes a test track from JSON.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if deserialization fails.
     fn make_track() -> Result<Track> {
         let json =
             r#"{"id":1,"title":"So What","track_number":1,"media_number":1,"isrc":"USPJ11001001"}"#;
         Ok(from_str(json)?)
     }
 
+    /// Makes a test album from JSON.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if deserialization fails.
     fn make_album() -> Result<Album> {
         let json = r#"{"id":"123","title":"Kind of Blue","release_date_original":"1959-08-17","copyright":"(C) 1959","genre":{"id":1,"name":"Jazz"},"label":{"id":1,"name":"Columbia"},"artist":{"id":1,"name":"Miles Davis"},"image":{"small":"s","thumbnail":"t","medium":"m","large":"l","extralarge":"xl","mega":"mega"}}"#;
         Ok(from_str(json)?)
     }
 
+    /// Tests extract all fields.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_all_fields() -> Result<()> {
         let track = make_track()?;
@@ -232,6 +247,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests extract with no album.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_with_no_album() -> Result<()> {
         let track = make_track()?;
@@ -244,6 +264,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests cover art priority.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn cover_art_priority() -> Result<()> {
         let image = Image {
@@ -264,6 +289,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests special characters preserved.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn special_characters_preserved() -> Result<()> {
         let json = r#"{"id":4,"title":"Café Résumé — Über","track_number":1}"#;

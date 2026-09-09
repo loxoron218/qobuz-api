@@ -8,17 +8,18 @@
 //!
 //! Setup: copy `.env.example` to `.env` and fill in your credentials, then:
 //!
-//! `cargo test --test search-integration --features live-tests`
+//! Run with `cargo test --test live --features live-tests`.
 //!
 //! In CI without credentials, run `cargo test` to run only unit tests and the mock integration.
 
-mod test_support;
-
 #[cfg(test)]
 mod tests {
-    crate::test_support_imports!();
+    use crate::{
+        test_support::{create_authenticated_service, get_test_keywords, init_logging},
+        test_support_imports,
+    };
 
-    use crate::test_support::{create_authenticated_service, get_test_keywords, init_logging};
+    test_support_imports!();
 
     #[test]
     fn init() {
@@ -35,7 +36,7 @@ mod tests {
                 .unwrap_or("?");
             info!(
                 "  {}. {} — {}",
-                i + 1,
+                i.saturating_add(1),
                 a.title.as_deref().unwrap_or("?"),
                 artist
             );
@@ -45,10 +46,12 @@ mod tests {
     fn log_artists(label: &str, items: &[Box<Artist>]) {
         info!("{} ({} results)", label, items.len());
         for (i, a) in items.iter().take(5).enumerate() {
-            let albums = a.albums_count.map_or("?".to_string(), |c| c.to_string());
+            let albums = a
+                .albums_count
+                .map_or_else(|| "?".to_string(), |c| c.to_string());
             info!(
                 "  {}. {} ({albums} albums)",
-                i + 1,
+                i.saturating_add(1),
                 a.name.as_deref().unwrap_or("?")
             );
         }
@@ -69,7 +72,7 @@ mod tests {
                 .unwrap_or("?");
             info!(
                 "  {}. {} — {} [{album}]",
-                i + 1,
+                i.saturating_add(1),
                 t.title.as_deref().unwrap_or("?"),
                 artist
             );
@@ -79,10 +82,12 @@ mod tests {
     fn log_playlists(label: &str, items: &[Box<Playlist>]) {
         info!("{} ({} results)", label, items.len());
         for (i, p) in items.iter().take(5).enumerate() {
-            let count = p.tracks_count.map_or("?".to_string(), |c| c.to_string());
+            let count = p
+                .tracks_count
+                .map_or_else(|| "?".to_string(), |c| c.to_string());
             info!(
                 "  {}. {} ({count} tracks)",
-                i + 1,
+                i.saturating_add(1),
                 p.name.as_deref().unwrap_or("?")
             );
         }

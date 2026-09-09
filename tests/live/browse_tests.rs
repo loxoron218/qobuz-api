@@ -8,20 +8,21 @@
 //!
 //! Setup: copy `.env.example` to `.env` and fill in your credentials, then:
 //!
-//! `cargo test --test browse-integration --features live-tests`
+//! Run with `cargo test --test live --features live-tests`.
 //!
 //! In CI without credentials, run `cargo test` to run only unit tests and the mock integration.
 
-mod test_support;
-
 #[cfg(test)]
 mod tests {
-    crate::test_support_imports!();
-
-    use crate::test_support::{
-        create_authenticated_service, get_browse_ids, init_logging,
-        query::{get_album_by_query, get_artist_by_query},
+    use crate::{
+        test_support::{
+            create_authenticated_service, get_browse_ids, init_logging,
+            query::{get_album_by_query, get_artist_by_query},
+        },
+        test_support_imports,
     };
+
+    test_support_imports!();
 
     #[test]
     fn init() {
@@ -54,7 +55,7 @@ mod tests {
             album.title.as_deref().unwrap_or("?"),
             album
                 .tracks_count
-                .map_or("?".to_string(), |c| c.to_string())
+                .map_or_else(|| "?".to_string(), |c| c.to_string())
         );
         Ok(())
     }
@@ -84,7 +85,7 @@ mod tests {
             "Album '{}' has {} tracks: {:?}",
             album.title.as_deref().unwrap_or("?"),
             track_ids.len(),
-            &track_ids[..track_ids.len().min(5)]
+            track_ids.iter().take(5).collect::<Vec<_>>()
         );
         Ok(())
     }
@@ -111,7 +112,7 @@ mod tests {
             artist.name.as_deref().unwrap_or("?"),
             artist
                 .albums_count
-                .map_or("?".to_string(), |c| c.to_string())
+                .map_or_else(|| "?".to_string(), |c| c.to_string())
         );
         Ok(())
     }
@@ -145,7 +146,9 @@ mod tests {
         info!(
             "Track: {} (duration: {}s, album: {})",
             track.title.as_deref().unwrap_or("?"),
-            track.duration.map_or("?".to_string(), |d| d.to_string()),
+            track
+                .duration
+                .map_or_else(|| "?".to_string(), |d| d.to_string()),
             track
                 .album
                 .as_ref()
@@ -234,7 +237,7 @@ mod tests {
             playlist.name.as_deref().unwrap_or("?"),
             playlist
                 .tracks_count
-                .map_or("?".to_string(), |c| c.to_string())
+                .map_or_else(|| "?".to_string(), |c| c.to_string())
         );
         Ok(())
     }
@@ -277,7 +280,11 @@ mod tests {
 
         info!("Release list ({} albums):", release_items.len());
         for (i, album) in release_items.iter().take(5).enumerate() {
-            info!("  {}. {}", i + 1, album.title.as_deref().unwrap_or("?"));
+            info!(
+                "  {}. {}",
+                i.saturating_add(1),
+                album.title.as_deref().unwrap_or("?")
+            );
         }
         Ok(())
     }

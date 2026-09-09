@@ -13,7 +13,7 @@ use {
 };
 
 use crate::{
-    api::{http_client::HttpClient, requests, service::QobuzApiService},
+    api::{http_client::HttpClient, requests::post, service::QobuzApiService},
     credentials::{save_app_credentials, web::extract_from_web_player},
     errors::QobuzApiError::{self, AuthenticationError, CredentialsError},
     signing::to_hex,
@@ -192,7 +192,7 @@ async fn login_inner(
     ];
 
     let response: LoginResponse =
-        requests::post(client, base_url, "/user/login", &mut params, app_id, "").await?;
+        post(client, base_url, "/user/login", &mut params, app_id, "").await?;
 
     response.user_auth_token.ok_or_else(|| {
         let err = AuthenticationError {
@@ -269,7 +269,7 @@ async fn login_with_token_inner(
     ];
 
     let response: LoginResponse =
-        requests::post(client, base_url, "/user/login", &mut params, app_id, "").await?;
+        post(client, base_url, "/user/login", &mut params, app_id, "").await?;
 
     if response.user_auth_token.is_none() {
         let err = AuthenticationError {

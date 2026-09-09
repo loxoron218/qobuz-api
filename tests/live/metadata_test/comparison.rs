@@ -23,6 +23,7 @@ use crate::metadata_test::{
 /// # Returns
 ///
 /// A tuple of (differences, `ignored_field_counts`).
+#[must_use]
 pub fn compare_exif_metadata(
     rust_entries: &[ExifEntry],
     csharp_entries: &[ExifEntry],
@@ -100,6 +101,7 @@ fn diff_field(
 /// # Returns
 ///
 /// `true` if the field is in an ignored category.
+#[must_use]
 pub fn is_ignored_field(field: &str, is_mp3: bool) -> bool {
     let f = |list: &[&str]| list.contains(&field);
     f(FILE_DATE_TIME_IGNORED)

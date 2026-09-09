@@ -38,3 +38,47 @@ pub struct FileUrl {
     /// Error code if applicable.
     pub code: Option<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use {
+        anyhow::{Result, ensure},
+        serde_json::from_str,
+    };
+
+    use crate::models::file_url::{
+        FileUrl,
+        quality::{FLAC_16_44, FLAC_24_96, FLAC_24_192, MP3_320},
+    };
+
+    /// Tests quality constants are distinct.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn quality_constants_are_distinct() -> Result<()> {
+        ensure!(MP3_320 == 5, "MP3 constant mismatch");
+        ensure!(FLAC_16_44 == 6, "FLAC 16/44 constant mismatch");
+        ensure!(FLAC_24_96 == 7, "FLAC 24/96 constant mismatch");
+        ensure!(FLAC_24_192 == 27, "FLAC 24/192 constant mismatch");
+        Ok(())
+    }
+
+    /// Tests file URL deserializes from JSON.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if deserialization fails.
+    #[test]
+    fn file_url_deserializes() -> Result<()> {
+        let body = r#"{"url":"https://example.com/file.flac","format_id":6}"#;
+        let file_url: FileUrl = from_str(body)?;
+        ensure!(
+            file_url.url.as_deref() == Some("https://example.com/file.flac"),
+            "URL mismatch"
+        );
+        ensure!(file_url.format_id == Some(6), "format mismatch");
+        Ok(())
+    }
+}

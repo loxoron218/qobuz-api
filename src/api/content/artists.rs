@@ -110,6 +110,11 @@ mod tests {
         assert_empty_search_test,
     };
 
+    /// Tests search artists deserializes results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_artists_deserializes_results() -> Result<()> {
         let body = r#"{"artists":{"items":[{"id":1,"name":"Miles Davis"}],"total":1}}"#;
@@ -123,6 +128,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests search artists empty results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_artists_empty_results() -> Result<()> {
         assert_empty_search_test!(
@@ -133,6 +143,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get artist by id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_artist_by_id() -> Result<()> {
         let body = r#"{"id":42,"name":"Coltrane"}"#;
@@ -144,6 +159,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get artist error response.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_artist_error_response() -> Result<()> {
         let body = r#"{"status":"error","code":404,"message":"Not found"}"#;
@@ -155,6 +175,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get artist with extra.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_artist_with_extra() -> Result<()> {
         let body = r#"{"id":42,"name":"Coltrane","albums_count":10}"#;
@@ -166,6 +191,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get release list returns albums.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_release_list_returns_albums() -> Result<()> {
         let body = r#"{"items":[{"id":"a1","title":"A Love Supreme"}],"total":1}"#;

@@ -11,11 +11,9 @@
 //!
 //! Setup: copy `.env.example` to `.env` and fill in your credentials, then:
 //!
-//! `cargo test --test download-integration --features live-tests`
+//! Run with `cargo test --test live --features live-tests`.
 //!
 //! In CI without credentials, run `cargo test` to run only unit tests and the mock integration.
-
-mod test_support;
 
 #[cfg(test)]
 mod tests {
@@ -70,13 +68,13 @@ mod tests {
 
         info!(
             "File URL: {}... (duration: {}s, format: {})",
-            &url[..url.len().min(80)],
+            url.chars().take(80).collect::<String>(),
             file_url
                 .duration
-                .map_or("?".to_string(), |d| format!("{d:.1}")),
+                .map_or_else(|| "?".to_string(), |d| format!("{d:.1}")),
             file_url
                 .format_id
-                .map_or("?".to_string(), |f| f.to_string())
+                .map_or_else(|| "?".to_string(), |f| f.to_string())
         );
         Ok(())
     }
@@ -206,7 +204,12 @@ mod tests {
         info!("Album download complete: {} tracks saved", paths.len());
         for (i, path) in paths.iter().enumerate() {
             let size = metadata(path).map_or(0, |m| m.len());
-            info!("  {}. {} ({} bytes)", i + 1, path.display(), size);
+            info!(
+                "  {}. {} ({} bytes)",
+                i.saturating_add(1),
+                path.display(),
+                size
+            );
         }
         Ok(())
     }
@@ -218,7 +221,9 @@ mod tests {
 
         ensure!(!paths.is_empty(), "should have downloaded tracks");
 
-        let first_path = &paths[0];
+        let first_path = paths
+            .first()
+            .ok_or_else(|| anyhow!("expected at least one downloaded file"))?;
         let parent = first_path
             .parent()
             .ok_or_else(|| anyhow!("downloaded file has no parent directory"))?;

@@ -16,6 +16,10 @@ use crate::metadata_test::ExifEntry;
 /// # Returns
 ///
 /// Parsed `ExifTool` entries.
+///
+/// # Errors
+///
+/// Returns an error if extraction fails or the output cannot be written.
 pub fn extract_and_save_metadata(file_path: &Path, output_path: &Path) -> Result<Vec<ExifEntry>> {
     let entries = extract_metadata_exiftool(file_path)?;
     let output = Command::new("exiftool")
@@ -39,6 +43,10 @@ pub fn extract_and_save_metadata(file_path: &Path, output_path: &Path) -> Result
 /// # Returns
 ///
 /// Parsed `ExifTool` entries.
+///
+/// # Errors
+///
+/// Returns an error if `exiftool` fails to run or exits unsuccessfully.
 pub fn extract_metadata_exiftool(file_path: &Path) -> Result<Vec<ExifEntry>> {
     let output = Command::new("exiftool")
         .arg("-G1")
@@ -66,6 +74,7 @@ pub fn extract_metadata_exiftool(file_path: &Path) -> Result<Vec<ExifEntry>> {
 /// # Returns
 ///
 /// A vector of parsed `ExifEntry` instances.
+#[must_use]
 pub fn parse_exiftool_output(content: &str) -> Vec<ExifEntry> {
     let mut entries = Vec::new();
     for line in content.lines() {
@@ -73,14 +82,11 @@ pub fn parse_exiftool_output(content: &str) -> Vec<ExifEntry> {
         if trimmed.is_empty() {
             continue;
         }
-        let Some(colon_pos) = trimmed.find(':') else {
+        let Some((before, after)) = trimmed.split_once(':') else {
             continue;
         };
-        let before = &trimmed[..colon_pos];
-        let value = trimmed[colon_pos + 1..].trim();
-        let field = before
-            .rfind(']')
-            .map_or_else(|| before.trim(), |pos| before[pos + 1..].trim());
+        let value = after.trim();
+        let field = before.rsplit(']').next().map_or("", str::trim);
         if field.is_empty() || value.is_empty() {
             continue;
         }

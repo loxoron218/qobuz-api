@@ -1,11 +1,10 @@
 //! Track search, browse, and download operations.
 
 use std::{
-    convert::AsRef,
     fs::create_dir_all,
     path::{Path, PathBuf},
     sync::atomic::{AtomicBool, Ordering::Relaxed},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 
 use {
@@ -16,15 +15,13 @@ use {
 use crate::{
     api::{
         content::{
+            cover::fetch_track_cover,
             download_io::{
                 DOWNLOAD_RETRY_BASE_DELAY_MS, MAX_DOWNLOAD_RETRIES, attempt_download,
-                fetch_track_cover, is_retryable_network_error,
+                is_retryable_network_error,
             },
             get_by_id, search,
         },
-        http_client::HttpClient,
-        requests::{RequestAuth, build_url_with_params, retry_with_backoff},
-        response::parse_response,
         service::QobuzApiService,
     },
     errors::QobuzApiError::{self, Canceled},
@@ -34,12 +31,10 @@ use crate::{
     },
     models::{
         album::Album,
-        file_url::FileUrl,
         search::{ItemSearchResult, TrackSearchResponse},
         track::Track,
     },
     sanitize::sanitize_filename,
-    signing::sign_track_file_url,
 };
 
 /// Searches for tracks matching the query.
@@ -84,90 +79,6 @@ pub async fn search_tracks(
 /// Returns a `QobuzApiError` if not authenticated or the API request fails.
 pub async fn get_track(service: &QobuzApiService, track_id: i32) -> Result<Track, QobuzApiError> {
     get_by_id(service, "/track/get", "track_id", track_id, None).await
-}
-
-/// Gets the download URL for a track at the specified quality.
-///
-/// # Arguments
-///
-/// * `service` - Authenticated API service
-/// * `track_id` - Track identifier
-/// * `format_id` - Quality format ID (5=MP3, 6=FLAC 16-bit, 7=FLAC 24-bit/96kHz, 27=FLAC
-///   24-bit/192kHz)
-///
-/// # Returns
-///
-/// The download URL and metadata for the track.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if not authenticated or the API request fails.
-pub async fn get_track_file_url(
-    service: &QobuzApiService,
-    track_id: i32,
-    format_id: i32,
-) -> Result<FileUrl, QobuzApiError> {
-    let token = service.require_auth_token()?;
-
-    get_track_file_url_raw(
-        service.http_client(),
-        service.base_url(),
-        &RequestAuth {
-            app_id: &service.app_id,
-            app_secret: service.app_secret(),
-            user_auth_token: token,
-        },
-        track_id,
-        format_id,
-    )
-    .await
-}
-
-/// Internal function to get a track file URL (used by download operations).
-///
-/// # Arguments
-///
-/// * `client` - HTTP client implementation
-/// * `base_url` - API base URL
-/// * `auth` - Application credentials and user authentication token
-/// * `track_id` - Track identifier
-/// * `format_id` - Quality format ID
-///
-/// # Returns
-///
-/// The signed download URL and metadata for the track.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if the signed API request fails.
-pub async fn get_track_file_url_raw(
-    client: &dyn HttpClient,
-    base_url: &str,
-    auth: &RequestAuth<'_>,
-    track_id: i32,
-    format_id: i32,
-) -> Result<FileUrl, QobuzApiError> {
-    let ts = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs()
-        .to_string();
-
-    let sig = sign_track_file_url(format_id, track_id, &ts, auth.app_secret);
-
-    let params: Vec<(String, String)> = vec![
-        ("track_id".to_string(), track_id.to_string()),
-        ("format_id".to_string(), format_id.to_string()),
-        ("intent".to_string(), "stream".to_string()),
-        ("request_ts".to_string(), ts),
-        ("request_sig".to_string(), sig),
-        ("app_id".to_string(), auth.app_id.to_string()),
-    ];
-
-    let url = build_url_with_params(base_url, "/track/getFileUrl", &params);
-    let response = retry_with_backoff(client, &url, auth.user_auth_token).await?;
-
-    parse_response::<FileUrl>(response, "/track/getFileUrl").await
 }
 
 /// Downloads a single track to the specified directory.
@@ -290,6 +201,11 @@ mod tests {
         assert_empty_search_test,
     };
 
+    /// Tests search tracks deserializes results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_tracks_deserializes_results() -> Result<()> {
         let body = r#"{"tracks":{"items":[{"id":1,"title":"So What"}],"total":1}}"#;
@@ -303,6 +219,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests search tracks empty results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_tracks_empty_results() -> Result<()> {
         assert_empty_search_test!(
@@ -313,6 +234,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get track by id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_track_by_id() -> Result<()> {
         let body = r#"{"id":42,"title":"Blue in Green"}"#;
@@ -324,6 +250,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests search tracks error response.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_tracks_error_response() -> Result<()> {
         let body = r#"{"status":"error","code":500,"message":"Server error"}"#;
@@ -335,6 +266,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get track not found.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_track_not_found() -> Result<()> {
         let body = r#"{"status":"error","code":404,"message":"Track not found"}"#;
@@ -346,6 +282,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests detect partial file returns none for missing.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn detect_partial_file_returns_none_for_missing() -> Result<()> {
         let dir = TempDir::new()?;
@@ -354,6 +295,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests detect partial file returns size for existing.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn detect_partial_file_returns_size_for_existing() -> Result<()> {
         let dir = TempDir::new()?;
@@ -363,6 +309,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests detect partial file returns none for empty.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn detect_partial_file_returns_none_for_empty() -> Result<()> {
         let dir = TempDir::new()?;

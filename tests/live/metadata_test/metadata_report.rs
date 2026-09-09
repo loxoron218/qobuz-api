@@ -61,6 +61,10 @@ fn write_field_diff(md: &mut String, file_header: &str, diff: &FieldDifference) 
 /// # Returns
 ///
 /// `Ok(())` on success, or an I/O / formatting error.
+///
+/// # Errors
+///
+/// Returns an error if the report cannot be written.
 pub fn generate_comparison_report(
     track: &TestTrack,
     format_label: &str,
@@ -120,6 +124,10 @@ pub fn generate_comparison_report(
 /// # Returns
 ///
 /// `Ok(())` on success, or an I/O / formatting error.
+///
+/// # Errors
+///
+/// Returns an error if the report cannot be written.
 pub fn generate_format_report(
     format_label: &str,
     summaries: &[(&TestTrack, ReportSummary)],
@@ -152,7 +160,8 @@ pub fn generate_format_report(
         .iter()
         .flat_map(|(_, s)| s.ignored_counts.iter())
         .fold(HashMap::new(), |mut acc, (k, v)| {
-            *acc.entry(k.clone()).or_default() += v;
+            let count = acc.entry(k.clone()).or_default();
+            *count = count.saturating_add(*v);
             acc
         });
     write_grouped_ignored_fields(&mut md, &agg, is_mp3)?;
@@ -219,9 +228,7 @@ fn write_grouped_ignored_fields(
     let mut standalone: Vec<(&str, &usize)> = Vec::new();
     let mut category_fields: HashSet<&str> = HashSet::new();
     for (_, fields) in &grouped_categories {
-        for &field in *fields {
-            category_fields.insert(field);
-        }
+        category_fields.extend(fields.iter().copied());
     }
 
     for (field, count) in agg {
@@ -271,7 +278,12 @@ fn write_field_sections(
     sorted.sort_by(|a, b| a.0.cmp(&b.0));
     for (i, (field, diffs)) in sorted.iter().enumerate() {
         writeln!(md, "#==================================================")?;
-        writeln!(md, "# {}. Field: {field}: {} Cases", i + 1, diffs.len())?;
+        writeln!(
+            md,
+            "# {}. Field: {field}: {} Cases",
+            i.saturating_add(1),
+            diffs.len()
+        )?;
         write!(
             md,
             "#==================================================\n\n"

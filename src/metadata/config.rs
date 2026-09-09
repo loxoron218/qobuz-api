@@ -2,6 +2,14 @@
 
 use std::collections::HashSet;
 
+use tracing::info;
+
+use crate::metadata::config::MetadataField::{
+    Album, AlbumArtist, Artist, Comment, Composer, Copyright, CoverArt, DiscNumber, DiscTotal,
+    Explicit, Genre, InvolvedPeople, Isrc, Label, MediaType, Producer, ReleaseDate, ReleaseYear,
+    Title, TrackNumber, TrackTotal, Upc, Url,
+};
+
 /// Configuration controlling which metadata fields to embed in audio files.
 ///
 /// Uses a set of `MetadataField` variants. `Default` enables all fields except `Comment`.
@@ -22,29 +30,29 @@ impl MetadataConfig {
     pub fn all() -> Self {
         Self {
             enabled: HashSet::from([
-                MetadataField::Title,
-                MetadataField::Artist,
-                MetadataField::Album,
-                MetadataField::AlbumArtist,
-                MetadataField::Genre,
-                MetadataField::ReleaseDate,
-                MetadataField::ReleaseYear,
-                MetadataField::Composer,
-                MetadataField::TrackNumber,
-                MetadataField::TrackTotal,
-                MetadataField::DiscNumber,
-                MetadataField::DiscTotal,
-                MetadataField::CoverArt,
-                MetadataField::Isrc,
-                MetadataField::Copyright,
-                MetadataField::Label,
-                MetadataField::MediaType,
-                MetadataField::Comment,
-                MetadataField::Producer,
-                MetadataField::InvolvedPeople,
-                MetadataField::Explicit,
-                MetadataField::Upc,
-                MetadataField::Url,
+                Title,
+                Artist,
+                Album,
+                AlbumArtist,
+                Genre,
+                ReleaseDate,
+                ReleaseYear,
+                Composer,
+                TrackNumber,
+                TrackTotal,
+                DiscNumber,
+                DiscTotal,
+                CoverArt,
+                Isrc,
+                Copyright,
+                Label,
+                MediaType,
+                Comment,
+                Producer,
+                InvolvedPeople,
+                Explicit,
+                Upc,
+                Url,
             ]),
         }
     }
@@ -71,9 +79,11 @@ impl MetadataConfig {
     /// * `enabled` - `true` to enable, `false` to disable
     pub fn set(&mut self, field: MetadataField, enabled: bool) {
         if enabled {
-            self.enabled.insert(field);
+            let inserted = self.enabled.insert(field);
+            info!(field = ?field, inserted, "metadata field toggled");
         } else {
-            self.enabled.remove(&field);
+            let removed = self.enabled.remove(&field);
+            info!(field = ?field, removed, "metadata field toggled");
         }
     }
 }
@@ -81,7 +91,8 @@ impl MetadataConfig {
 impl Default for MetadataConfig {
     fn default() -> Self {
         let mut config = Self::all();
-        config.enabled.remove(&MetadataField::Comment);
+        let removed = config.enabled.remove(&Comment);
+        info!(removed, "default metadata config excludes comment");
         config
     }
 }
@@ -141,11 +152,13 @@ pub enum MetadataField {
 mod tests {
     use anyhow::{Result, ensure};
 
-    use crate::metadata::config::{
-        MetadataConfig,
-        MetadataField::{Comment, Producer, Title},
-    };
+    use crate::metadata::config::{Comment, MetadataConfig, Producer, Title};
 
+    /// Tests default excludes comment.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn default_excludes_comment() -> Result<()> {
         let config = MetadataConfig::default();
@@ -154,6 +167,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests all enables every field.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn all_enables_every_field() -> Result<()> {
         let config = MetadataConfig::all();
@@ -162,6 +180,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests set toggles field.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn set_toggles_field() -> Result<()> {
         let mut config = MetadataConfig::default();

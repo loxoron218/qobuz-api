@@ -112,3 +112,91 @@ pub struct PlaylistOwner {
 fn first_img_url(v: Option<&Vec<String>>) -> Option<String> {
     v?.first().cloned()
 }
+
+#[cfg(test)]
+mod tests {
+    use anyhow::{Result, ensure};
+
+    use crate::models::{
+        playlist::{Playlist, PlaylistOwner},
+        subscription::User,
+    };
+
+    /// Tests creator name prefers display name.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn creator_name_prefers_display() -> Result<()> {
+        let playlist = Playlist {
+            id: None,
+            name: None,
+            description: None,
+            tracks_count: None,
+            duration: None,
+            is_public: None,
+            creator: Some(User {
+                id: None,
+                credential: None,
+                subscription: None,
+                display_name: Some("Creator".to_string()),
+            }),
+            owner: Some(PlaylistOwner {
+                id: None,
+                name: Some("Owner".to_string()),
+            }),
+            image: None,
+            image_rectangle: None,
+            image_rectangle_mini: None,
+            images: None,
+            images150: None,
+            images300: None,
+            tracks: None,
+            created_at: None,
+            updated_at: None,
+        };
+        ensure!(
+            playlist.creator_name() == Some("Creator"),
+            "should prefer creator"
+        );
+        Ok(())
+    }
+
+    /// Tests best image URL prefers rectangle banner.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn best_image_url_prefers_banner() -> Result<()> {
+        let playlist = Playlist {
+            id: None,
+            name: None,
+            description: None,
+            tracks_count: None,
+            duration: None,
+            is_public: None,
+            creator: None,
+            owner: None,
+            image: None,
+            image_rectangle: Some(vec!["large.jpg".to_string()]),
+            image_rectangle_mini: Some(vec!["mini.jpg".to_string()]),
+            images: Some(vec!["small.jpg".to_string()]),
+            images150: None,
+            images300: None,
+            tracks: None,
+            created_at: None,
+            updated_at: None,
+        };
+        ensure!(
+            playlist.best_image_url(true).as_deref() == Some("large.jpg"),
+            "large should prefer banner"
+        );
+        ensure!(
+            playlist.best_image_url(false).as_deref() == Some("mini.jpg"),
+            "thumbnail should prefer mini"
+        );
+        Ok(())
+    }
+}

@@ -38,6 +38,10 @@ use crate::metadata_test::{
 /// # Returns
 ///
 /// The path to the downloaded and tagged file.
+///
+/// # Errors
+///
+/// Returns an error if the download, tagging, or file setup fails.
 pub fn download_test_track(
     service: &mut QobuzApiService,
     track: &TestTrack,
@@ -100,6 +104,10 @@ fn download_cover_art(url: &str) -> Result<Vec<u8>> {
 /// # Returns
 ///
 /// `Ok(())` on success, or an API / I/O error.
+///
+/// # Errors
+///
+/// Returns an error if the track cannot be fetched or written.
 pub fn save_track_json(service: &QobuzApiService, track: &TestTrack) -> Result<()> {
     let dir = json_dir();
     let base = sanitize_filename(&format!(
@@ -119,6 +127,10 @@ pub fn save_track_json(service: &QobuzApiService, track: &TestTrack) -> Result<(
 /// # Returns
 ///
 /// `Ok(())` on success, or an I/O error.
+///
+/// # Errors
+///
+/// Returns an error if a required directory cannot be created.
 pub fn ensure_directories() -> Result<()> {
     for dir in [
         downloads_dir("flac"),

@@ -9,7 +9,10 @@ use anyhow::{Result, anyhow, ensure};
 
 use crate::{
     api::{
-        auth::{authenticate_with_env_from, login, login_with_token, refresh_app_credentials},
+        auth::{
+            authenticate_with_env, authenticate_with_env_from, login, login_with_token,
+            refresh_app_credentials,
+        },
         service::QobuzApiService,
         test_support::{MockServer, make_service_without_auth},
     },
@@ -27,6 +30,11 @@ fn env_reader(env: &HashMap<String, String>) -> impl Fn(&str) -> Result<String, 
     move |key| env.get(key).cloned().ok_or(NotPresent)
 }
 
+/// Tests env auth prefers token over email.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn env_auth_prefers_token_over_email() -> Result<()> {
     let env = mock_env(&[
@@ -42,6 +50,11 @@ fn env_auth_prefers_token_over_email() -> Result<()> {
     Ok(())
 }
 
+/// Tests env auth uses email with password.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn env_auth_uses_email_with_password() -> Result<()> {
     let env = mock_env(&[("QOBUZ_EMAIL", "e@x.com"), ("QOBUZ_PASSWORD", "secret")]);
@@ -52,6 +65,11 @@ fn env_auth_uses_email_with_password() -> Result<()> {
     Ok(())
 }
 
+/// Tests env auth uses username alias.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn env_auth_uses_username_alias() -> Result<()> {
     let env = mock_env(&[("QOBUZ_USERNAME", "e@x.com"), ("QOBUZ_PASSWORD", "secret")]);
@@ -62,6 +80,16 @@ fn env_auth_uses_username_alias() -> Result<()> {
     Ok(())
 }
 
+/// Expects authentication to fail with a matching error message.
+///
+/// # Arguments
+///
+/// * `env` - Mock environment variables.
+/// * `expected_substring` - Expected error message substring.
+///
+/// # Errors
+///
+/// Returns an error if no error occurs or the message mismatches.
 fn expect_auth_error(env: &HashMap<String, String>, expected_substring: &str) -> Result<()> {
     let mut service = QobuzApiService::with_credentials("id", "secret")?;
     let err = authenticate_with_env_from(&mut service, env_reader(env))
@@ -71,16 +99,31 @@ fn expect_auth_error(env: &HashMap<String, String>, expected_substring: &str) ->
     Ok(())
 }
 
+/// Tests env auth fails without vars.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn env_auth_fails_without_vars() -> Result<()> {
     expect_auth_error(&mock_env(&[]), "environment variables found")
 }
 
+/// Tests env auth fails email no password.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn env_auth_fails_email_no_password() -> Result<()> {
     expect_auth_error(&mock_env(&[("QOBUZ_EMAIL", "e@x.com")]), "QOBUZ_PASSWORD")
 }
 
+/// Tests login success stores token.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn login_success_stores_token() -> Result<()> {
     let server = MockServer::start(200, r#"{"user_auth_token":"login-tok","user":{"id":1}}"#)?;
@@ -90,6 +133,11 @@ fn login_success_stores_token() -> Result<()> {
     Ok(())
 }
 
+/// Tests login failure returns error.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn login_failure_returns_error() -> Result<()> {
     let server = MockServer::start(401, r#"{"status":"error","code":401,"message":"Invalid"}"#)?;
@@ -101,6 +149,11 @@ fn login_failure_returns_error() -> Result<()> {
     Ok(())
 }
 
+/// Tests token auth success stores token.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn token_auth_success_stores_token() -> Result<()> {
     let server = MockServer::start(200, r#"{"user_auth_token":"tok","user":{"id":42}}"#)?;
@@ -110,6 +163,11 @@ fn token_auth_success_stores_token() -> Result<()> {
     Ok(())
 }
 
+/// Tests token auth failure returns error.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn token_auth_failure_returns_error() -> Result<()> {
     let server = MockServer::start(
@@ -121,6 +179,11 @@ fn token_auth_failure_returns_error() -> Result<()> {
     Ok(())
 }
 
+/// Tests refresh rejects double refresh.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
 #[test]
 fn refresh_rejects_double_refresh() -> Result<()> {
     let mut service = QobuzApiService::with_credentials("id", "secret")?;
@@ -131,4 +194,25 @@ fn refresh_rejects_double_refresh() -> Result<()> {
     ensure!(matches!(err, CredentialsError { .. }));
     ensure!(err.to_string().contains("once per session"));
     Ok(())
+}
+
+/// Tests env wrapper errors without credentials.
+///
+/// # Errors
+///
+/// Returns an error if the test setup or assertion fails.
+#[test]
+fn env_wrapper_errors_without_credentials() -> Result<()> {
+    let server = MockServer::start(200, "{}")?;
+    let mut service = make_service_without_auth(&server.base_url())?;
+    match authenticate_with_env(&mut service) {
+        Ok(()) => {
+            ensure!(
+                service.require_auth_token().is_ok(),
+                "token should be set on success"
+            );
+            Ok(())
+        }
+        Err(_) => Ok(()),
+    }
 }

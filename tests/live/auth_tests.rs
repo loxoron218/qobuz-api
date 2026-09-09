@@ -7,17 +7,15 @@
 //!
 //! Setup: copy `.env.example` to `.env` and fill in your credentials, then:
 //!
-//! `cargo test --test auth-integration --features live-tests`
+//! Run with `cargo test --test live --features live-tests`.
 //!
 //! In CI without credentials, run `cargo test` to run only unit tests and the mock integration.
 
-mod test_support;
-
-use anyhow::{Result, anyhow};
+use anyhow::{Result, anyhow, ensure};
 
 use qobuz_api::api::service::QobuzApiService;
 
-use crate::test_support::{ensure_env_credentials, env_var_opt};
+use crate::test_support::ensure_env_credentials;
 
 /// User credentials loaded from the `.env` file.
 struct UserCredentials {
@@ -37,14 +35,31 @@ struct UserCredentials {
 ///
 /// `Ok(UserCredentials)` with the loaded credentials.
 fn require_user_credentials() -> Result<UserCredentials> {
-    ensure_env_credentials()?;
+    let env_map = ensure_env_credentials()?;
 
     Ok(UserCredentials {
-        email: env_var_opt("QOBUZ_EMAIL").or_else(|| env_var_opt("QOBUZ_USERNAME")),
-        password: env_var_opt("QOBUZ_PASSWORD"),
-        user_id: env_var_opt("QOBUZ_USER_ID"),
-        user_auth_token: env_var_opt("QOBUZ_USER_AUTH_TOKEN"),
+        email: env_map
+            .get("QOBUZ_EMAIL")
+            .or_else(|| env_map.get("QOBUZ_USERNAME"))
+            .cloned(),
+        password: env_map.get("QOBUZ_PASSWORD").cloned(),
+        user_id: env_map.get("QOBUZ_USER_ID").cloned(),
+        user_auth_token: env_map.get("QOBUZ_USER_AUTH_TOKEN").cloned(),
     })
+}
+
+/// Ensures user credentials exist in the environment without loading them.
+///
+/// # Errors
+///
+/// Returns an error if no valid credentials are found.
+fn validate_credentials() -> Result<()> {
+    let credentials = require_user_credentials()?;
+    ensure!(
+        credentials.email.is_some() || credentials.user_id.is_some(),
+        "no usable credentials found"
+    );
+    Ok(())
 }
 
 /// Creates a `QobuzApiService` using `new()`, which auto-extracts app credentials from the web
@@ -66,7 +81,7 @@ mod tests {
 
     use qobuz_api::errors::QobuzApiError::{ApiErrorResponse, AuthenticationError};
 
-    use super::{create_service, require_user_credentials};
+    use crate::auth_tests::{create_service, require_user_credentials, validate_credentials};
 
     #[test]
     fn live_email_password_login_succeeds() -> Result<()> {
@@ -94,7 +109,7 @@ mod tests {
 
     #[test]
     fn live_email_password_wrong_credentials_fail() -> Result<()> {
-        require_user_credentials()?;
+        validate_credentials()?;
 
         let mut service = create_service()?;
 
@@ -142,7 +157,7 @@ mod tests {
 
     #[test]
     fn live_env_auth_succeeds() -> Result<()> {
-        require_user_credentials()?;
+        validate_credentials()?;
 
         let mut service = create_service()?;
         service.authenticate_with_env()?;
@@ -158,7 +173,7 @@ mod tests {
 
     #[test]
     fn live_service_new_reads_env_and_authenticates() -> Result<()> {
-        require_user_credentials()?;
+        validate_credentials()?;
 
         let mut service = create_service()?;
         service.authenticate_with_env()?;

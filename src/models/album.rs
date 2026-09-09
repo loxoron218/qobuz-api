@@ -140,3 +140,32 @@ pub struct Label {
     /// URL-friendly name.
     pub slug: Option<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use anyhow::{Result, ensure};
+
+    use crate::models::album::Album;
+
+    /// Tests file extension mapping for quality IDs.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn extension_for_format_maps_types() -> Result<()> {
+        ensure!(
+            Album::extension_for_format(5) == "mp3",
+            "MP3 should map to mp3"
+        );
+        ensure!(
+            Album::extension_for_format(6) == "flac",
+            "FLAC should map to flac"
+        );
+        ensure!(
+            Album::extension_for_format(27) == "flac",
+            "hi-res should map to flac"
+        );
+        Ok(())
+    }
+}

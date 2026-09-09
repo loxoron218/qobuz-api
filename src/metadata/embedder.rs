@@ -2,6 +2,7 @@
 
 mod artist_fields;
 mod basic_fields;
+mod dates;
 mod performers;
 
 use std::path::{Path, PathBuf};
@@ -12,10 +13,10 @@ use {
         file::{FileType::Flac, TaggedFileExt},
         ogg::tag::VorbisComments,
         probe::Probe,
-        tag::{Tag, TagExt},
+        tag::{ItemKey, ItemValue::Text, Tag, TagExt, TagItem},
     },
     rayon::iter::{IntoParallelRefIterator, ParallelIterator},
-    tracing::debug,
+    tracing::{info, warn},
 };
 
 use crate::{
@@ -33,6 +34,19 @@ use crate::{
         extractor::ComprehensiveMetadata,
     },
 };
+
+/// Pushes a text tag item, warning on failure.
+///
+/// # Arguments
+///
+/// * `tag` - Target tag to write into.
+/// * `key` - Tag key to push.
+/// * `value` - Text value to store.
+pub fn push_text(tag: &mut Tag, key: ItemKey, value: String) {
+    if !tag.push(TagItem::new(key, Text(value))) {
+        warn!("failed to push tag item");
+    }
+}
 
 /// Embeds metadata into an audio file.
 ///
@@ -60,7 +74,7 @@ pub fn embed_metadata_in_file(
     metadata: &ComprehensiveMetadata,
     config: &MetadataConfig,
 ) -> Result<(), QobuzApiError> {
-    debug!(path = %path.display(), "Embedding metadata");
+    info!(path = %path.display(), "Embedding metadata");
 
     let mut tagged_file = Probe::open(path)
         .map_err(|e| MetadataError(format!("Probe open: {e}")))?
@@ -73,7 +87,10 @@ pub fn embed_metadata_in_file(
         t
     } else {
         let tag_type = tagged_file.primary_tag_type();
-        tagged_file.insert_tag(Tag::new(tag_type));
+        let previous = tagged_file.insert_tag(Tag::new(tag_type));
+        if previous.is_some() {
+            warn!("newly probed file already had a primary tag");
+        }
         tagged_file
             .primary_tag_mut()
             .ok_or_else(|| MetadataError("No tag created".into()))?
@@ -108,7 +125,7 @@ pub fn embed_metadata_in_file(
             .map_err(|e| MetadataError(format!("Save failed: {e}")))?;
     }
 
-    debug!(path = %path.display(), "Metadata embedded");
+    info!(path = %path.display(), "Metadata embedded");
     Ok(())
 }
 
@@ -153,10 +170,19 @@ mod tests {
             MetadataConfig,
             MetadataField::{Artist, CoverArt, Title},
         },
-        embedder::embed_metadata_in_file,
+        embedder::{embed_metadata_batch, embed_metadata_in_file},
         extractor::ComprehensiveMetadata,
     };
 
+    /// Creates a minimal FLAC file for tests.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Destination path.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file cannot be written.
     fn create_minimal_flac(path: &Path) -> Result<()> {
         let mut data = b"fLaC\x80\x00\x00\x22".to_vec();
         let streaminfo = [
@@ -168,6 +194,15 @@ mod tests {
         write(path, data)
     }
 
+    /// Reads the primary tag from a test file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Audio file path.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if probing or reading fails.
     fn get_tag(path: &Path) -> AnyhowResult<Tag> {
         let tagged_file = Probe::open(path)
             .map_err(|e| anyhow!("probe: {e}"))?
@@ -205,6 +240,11 @@ mod tests {
         }
     }
 
+    /// Tests embed flac all fields.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_flac_all_fields() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -221,6 +261,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests embed flac selective fields.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_flac_selective_fields() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -237,6 +282,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests embed cover art.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_cover_art() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -249,6 +299,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests embed cover art skipped when disabled.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_cover_art_skipped_when_disabled() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -261,6 +316,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests embed title with version.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_title_with_version() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -272,6 +332,37 @@ mod tests {
         };
         embed_metadata_in_file(&path, &meta, &MetadataConfig::all())?;
         ensure!(get_tag(&path)?.title().as_deref() == Some("Test Song (Remastered 2015)"));
+        Ok(())
+    }
+
+    /// Tests embed batch empty returns empty.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
+    #[test]
+    fn embed_batch_empty_returns_empty() -> AnyhowResult<()> {
+        let results = embed_metadata_batch(&[], &MetadataConfig::all());
+        ensure!(results.is_empty(), "empty input should yield empty output");
+        Ok(())
+    }
+
+    /// Tests embed batch processes files.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
+    #[test]
+    fn embed_batch_processes_files() -> AnyhowResult<()> {
+        let dir = TempDir::new()?;
+        let path = dir.path().join("batch.flac");
+        create_minimal_flac(&path)?;
+        let files = vec![(path, sample_metadata())];
+        let results = embed_metadata_batch(&files, &MetadataConfig::all());
+        ensure!(results.len() == 1, "expected one batch result");
+        for result in results {
+            result.map_err(|e| anyhow!("batch failed: {e}"))?;
+        }
         Ok(())
     }
 }

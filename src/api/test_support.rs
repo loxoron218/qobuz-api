@@ -7,102 +7,208 @@ use std::{
     time::Duration,
 };
 
-use anyhow::Result;
+use anyhow::{Result, ensure};
 
 use crate::api::{http_client::ReqwestClient, service::QobuzApiService};
 
+/// Asserts that a search result block contains an empty item list.
+///
+/// Returns an error if items are missing or non-empty.
 #[macro_export]
 macro_rules! assert_empty_search {
     ($block:expr) => {{
         let result = $block?;
-        let items = result.items.ok_or_else(|| ::anyhow::anyhow!("no items"))?;
-        ::anyhow::ensure!(items.is_empty());
+        let items = result.items.ok_or_else(|| anyhow!("no items"))?;
+        ensure!(items.is_empty());
     }};
 }
 
+/// Runs a search function against a mock server and asserts empty results.
+///
+/// Spins up a mock server with the given body and checks the search output.
 #[macro_export]
 macro_rules! assert_empty_search_test {
     ($search_fn:path, $query:expr, $body:expr) => {{
         let server = $crate::api::test_support::MockServer::start(200, $body)?;
         let service = $crate::api::test_support::make_service(&server.base_url())?;
-        let rt = ::tokio::runtime::Runtime::new()?;
+        let rt = Runtime::new()?;
         $crate::assert_empty_search!(rt.block_on($search_fn(&service, $query, None, None)));
     }};
 }
 
+/// Sets up a mock server, service, and Tokio runtime for tests.
+///
+/// Binds the identifiers to a mock server, authenticated service, and runtime.
 #[macro_export]
 macro_rules! setup_test {
     ($status:expr, $body:expr, $server:ident, $service:ident, $rt:ident) => {
         let $server = $crate::api::test_support::MockServer::start($status, $body)?;
         let $service = $crate::api::test_support::make_service(&$server.base_url())?;
-        let $rt = ::tokio::runtime::Runtime::new()?;
+        let $rt = Runtime::new()?;
     };
 }
 
-pub struct MockServer {
+pub(super) struct MockServer {
     addr: SocketAddr,
 }
 
 impl MockServer {
-    pub fn start(status: u16, body: &str) -> Result<Self> {
+    /// Starts a mock server returning the given status and body.
+    ///
+    /// # Arguments
+    ///
+    /// * `status` - HTTP status code to return.
+    /// * `body` - Response body to return.
+    ///
+    /// # Returns
+    ///
+    /// A running mock server.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the listener cannot bind or the thread fails to start.
+    pub(super) fn start(status: u16, body: &str) -> Result<Self> {
         Self::start_with_max_requests(status, body, 4)
     }
 
-    pub fn start_with_max_requests(status: u16, body: &str, max_requests: usize) -> Result<Self> {
+    /// Starts a mock server handling up to `max_requests` requests.
+    ///
+    /// # Arguments
+    ///
+    /// * `status` - HTTP status code to return.
+    /// * `body` - Response body to return.
+    /// * `max_requests` - Maximum requests to serve.
+    ///
+    /// # Returns
+    ///
+    /// A running mock server.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the listener cannot bind or the thread fails to start.
+    pub(super) fn start_with_max_requests(
+        status: u16,
+        body: &str,
+        max_requests: usize,
+    ) -> Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let addr = listener.local_addr()?;
-        let response = format!(
-            "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: \
-             {}\r\nConnection: close\r\n\r\n{body}",
-            body.len()
-        );
-        spawn_server(listener, response.into_bytes(), max_requests);
+        let response = format_json_response(status, body);
+        spawn_server(listener, response, max_requests);
         sleep(Duration::from_millis(50));
         Ok(Self { addr })
     }
 
-    pub fn base_url(&self) -> String {
-        format!("http://127.0.0.1:{}", self.addr.port())
+    pub(super) fn base_url(&self) -> String {
+        socket_base_url(&self.addr)
     }
 }
 
-pub struct SequentialMockServer {
+pub(super) struct SequentialMockServer {
     addr: SocketAddr,
 }
 
 impl SequentialMockServer {
-    pub fn start(responses: Vec<(u16, String)>) -> Result<Self> {
+    /// Starts a sequential mock server returning the given responses in order.
+    ///
+    /// # Arguments
+    ///
+    /// * `responses` - Status and body pairs to return in order.
+    ///
+    /// # Returns
+    ///
+    /// A running mock server.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the listener cannot bind or the thread fails to start.
+    pub(super) fn start(responses: Vec<(u16, String)>) -> Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let addr = listener.local_addr()?;
         let encoded: Vec<Vec<u8>> = responses
             .into_iter()
-            .map(|(status, body)| {
-                format!(
-                    "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: \
-                     {}\r\nConnection: close\r\n\r\n{body}",
-                    body.len()
-                )
-                .into_bytes()
-            })
+            .map(|(status, body)| format_json_response(status, &body))
             .collect();
-        spawn(move || serve_sequential(&listener, &encoded));
+        let handle = spawn(move || serve_sequential(&listener, &encoded));
+        ensure!(
+            !handle.is_finished(),
+            "sequential mock server thread should be running"
+        );
         sleep(Duration::from_millis(50));
         Ok(Self { addr })
     }
 
-    pub fn base_url(&self) -> String {
-        format!("http://127.0.0.1:{}", self.addr.port())
+    pub(super) fn base_url(&self) -> String {
+        socket_base_url(&self.addr)
     }
 }
 
-pub fn make_service(base_url: &str) -> Result<QobuzApiService> {
+/// Formats a minimal HTTP JSON response for mock servers.
+///
+/// # Arguments
+///
+/// * `status` - HTTP status code to return.
+/// * `body` - Response body to return.
+///
+/// # Returns
+///
+/// Raw HTTP response bytes.
+fn format_json_response(status: u16, body: &str) -> Vec<u8> {
+    format!(
+        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: \
+         close\r\n\r\n{body}",
+        body.len()
+    )
+    .into_bytes()
+}
+
+/// Builds a base URL for a bound mock server address.
+///
+/// # Arguments
+///
+/// * `addr` - Socket address of the mock server.
+///
+/// # Returns
+///
+/// Base URL string pointing at the mock server.
+fn socket_base_url(addr: &SocketAddr) -> String {
+    format!("http://127.0.0.1:{}", addr.port())
+}
+
+/// Creates an authenticated test service pointing at the mock server.
+///
+/// # Arguments
+///
+/// * `base_url` - Base URL of the mock server.
+///
+/// # Returns
+///
+/// An authenticated test service.
+///
+/// # Errors
+///
+/// Returns an error if the HTTP client cannot be created.
+pub(super) fn make_service(base_url: &str) -> Result<QobuzApiService> {
     let client = ReqwestClient::new("test-app-id")?;
     let mut svc = QobuzApiService::new_test(client.into_boxed(), base_url);
     svc.set_auth_token("test-token".to_string());
     Ok(svc)
 }
 
-pub fn make_service_without_auth(base_url: &str) -> Result<QobuzApiService> {
+/// Creates an unauthenticated test service pointing at the mock server.
+///
+/// # Arguments
+///
+/// * `base_url` - Base URL of the mock server.
+///
+/// # Returns
+///
+/// A test service without an auth token.
+///
+/// # Errors
+///
+/// Returns an error if the HTTP client cannot be created.
+pub(super) fn make_service_without_auth(base_url: &str) -> Result<QobuzApiService> {
     let client = ReqwestClient::new("test-app-id")?;
     Ok(QobuzApiService::new_test(client.into_boxed(), base_url))
 }
@@ -122,8 +228,23 @@ fn serve_loop(listener: &TcpListener, bytes: &[u8], max_requests: usize) {
     }
 }
 
+/// Spawns a background thread serving the mock response.
+///
+/// # Arguments
+///
+/// * `listener` - TCP listener to accept connections on.
+/// * `bytes` - Raw HTTP response bytes to serve.
+/// * `max_requests` - Maximum requests to serve.
+///
+/// # Panics
+///
+/// Panics if the mock server thread fails to start.
 fn spawn_server(listener: TcpListener, bytes: Vec<u8>, max_requests: usize) {
-    spawn(move || serve_loop(&listener, &bytes, max_requests));
+    let handle = spawn(move || serve_loop(&listener, &bytes, max_requests));
+    assert!(
+        !handle.is_finished(),
+        "mock server thread should be running"
+    );
 }
 
 fn serve_sequential(listener: &TcpListener, responses: &[Vec<u8>]) {

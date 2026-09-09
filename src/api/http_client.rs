@@ -1,10 +1,13 @@
 //! HTTP client trait abstraction for deterministic testing.
 
-use std::{future::Future, pin::Pin};
+use std::pin::Pin;
 
-use reqwest::{
-    Client, Response,
-    header::{HeaderMap, HeaderName, HeaderValue},
+use {
+    reqwest::{
+        Client, Response,
+        header::{HeaderMap, HeaderName, HeaderValue},
+    },
+    tracing::warn,
 };
 
 use crate::errors::QobuzApiError;
@@ -68,6 +71,7 @@ pub trait HttpClient: Send + Sync {
 }
 
 /// Production HTTP client wrapping `reqwest::Client`.
+#[derive(Debug)]
 pub struct ReqwestClient {
     /// Inner reqwest client with connection pooling.
     inner: Client,
@@ -89,8 +93,12 @@ impl ReqwestClient {
     /// Returns a `QobuzApiError` if the reqwest client builder fails.
     pub fn new(app_id: &str) -> Result<Self, QobuzApiError> {
         let mut default_headers = HeaderMap::new();
-        if let Ok(val) = HeaderValue::from_str(app_id) {
-            default_headers.insert(HeaderName::from_static("x-app-id"), val);
+        if let Ok(val) = HeaderValue::from_str(app_id)
+            && default_headers
+                .insert(HeaderName::from_static("x-app-id"), val)
+                .is_some()
+        {
+            warn!("fresh header map already contained x-app-id");
         }
 
         let inner = Client::builder()

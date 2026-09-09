@@ -13,15 +13,14 @@ use {
         io::AsyncWriteExt,
     },
     tokio_stream::StreamExt,
-    tracing::{debug, warn},
+    tracing::warn,
 };
 
 use crate::{
     api::{
-        content::tracks::get_track_file_url, requests::download_stream, service::QobuzApiService,
+        content::stream::get_track_file_url, requests::download_stream, service::QobuzApiService,
     },
     errors::QobuzApiError::{self, Canceled, DownloadError, HttpError},
-    metadata::extractor::ComprehensiveMetadata,
     models::album::Album,
 };
 
@@ -122,39 +121,6 @@ pub async fn save_track_to_disk(
     Ok(path)
 }
 
-/// Fetches cover art binary data for a track if a cover art URL is available.
-///
-/// # Arguments
-///
-/// * `service` - Authenticated API service
-/// * `meta` - Comprehensive metadata containing the cover art URL
-/// * `token` - User authentication token
-///
-/// # Returns
-///
-/// Cover art image data as bytes, or `None` if unavailable.
-pub async fn fetch_track_cover(
-    service: &QobuzApiService,
-    meta: &ComprehensiveMetadata,
-    token: &str,
-) -> Option<Vec<u8>> {
-    let url = meta.cover_art_url.as_deref()?;
-    let resp = match service.http_client().get_with_auth(url, token, None).await {
-        Ok(r) => r,
-        Err(e) => {
-            debug!(error = %e, "Cover art HTTP request failed");
-            return None;
-        }
-    };
-    match resp.bytes().await {
-        Err(e) => {
-            debug!(error = %e, "Failed to read cover art bytes");
-            None
-        }
-        Ok(b) => Some(b.to_vec()),
-    }
-}
-
 /// Performs a single download attempt, optionally resuming from a partial file.
 ///
 /// # Arguments
@@ -224,4 +190,181 @@ pub fn is_retryable_network_error(err: &QobuzApiError) -> bool {
         || reqwest_err.is_timeout()
         || reqwest_err.is_body()
         || reqwest_err.is_decode()
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::AtomicBool;
+
+    use {
+        anyhow::{Result, anyhow, ensure},
+        reqwest::Response,
+        tempfile::TempDir,
+        tokio::runtime::Runtime,
+    };
+
+    use crate::{
+        api::{
+            content::{
+                cover::fetch_track_cover,
+                download_io::{
+                    DOWNLOAD_RETRY_BASE_DELAY_MS, MAX_DOWNLOAD_RETRIES, attempt_download,
+                    is_retryable_network_error, save_track_to_disk, write_response_to_file,
+                },
+                stream::get_track_file_url,
+            },
+            test_support::{MockServer, make_service, make_service_without_auth},
+        },
+        errors::QobuzApiError::{AuthenticationError, Canceled, DownloadError},
+        metadata::extractor::ComprehensiveMetadata,
+        models::file_url::quality::MP3_320,
+    };
+
+    /// Fetches a mock streaming response with its temp dir and runtime.
+    ///
+    /// # Returns
+    ///
+    /// Temp dir, runtime, and streaming response for file-write tests.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    fn mock_stream_response() -> Result<(TempDir, Runtime, Response)> {
+        let server = MockServer::start(200, "audio-bytes")?;
+        let service = make_service(&server.base_url())?;
+        let rt = Runtime::new()?;
+        let response = rt.block_on(service.http_client().get_with_auth(
+            &format!("{}/stream", service.base_url()),
+            "token",
+            None,
+        ))?;
+        let dir = TempDir::new()?;
+        Ok((dir, rt, response))
+    }
+
+    /// Tests retry constants have sensible values.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn retry_constants_are_sensible() -> Result<()> {
+        ensure!(MAX_DOWNLOAD_RETRIES > 0, "retries should be positive");
+        ensure!(
+            DOWNLOAD_RETRY_BASE_DELAY_MS > 0,
+            "base delay should be positive"
+        );
+        Ok(())
+    }
+
+    /// Tests non-network errors are not retryable.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the assertion fails.
+    #[test]
+    fn non_network_error_is_not_retryable() -> Result<()> {
+        let err = Canceled;
+        ensure!(
+            !is_retryable_network_error(&err),
+            "canceled should not retry"
+        );
+        let err = DownloadError {
+            message: "boom".to_string(),
+        };
+        ensure!(
+            !is_retryable_network_error(&err),
+            "download should not retry"
+        );
+        Ok(())
+    }
+
+    /// Tests file URL fetching fails without authentication.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn file_url_requires_auth() -> Result<()> {
+        let server = MockServer::start(200, "{}")?;
+        let service = make_service_without_auth(&server.base_url())?;
+        let rt = Runtime::new()?;
+        let result = rt.block_on(get_track_file_url(&service, 1, MP3_320));
+        ensure!(result.is_err(), "expected auth error");
+        let err = result.err().ok_or_else(|| anyhow!("expected error"))?;
+        ensure!(
+            matches!(err, AuthenticationError { .. }),
+            "expected AuthenticationError"
+        );
+        Ok(())
+    }
+
+    /// Tests stream writing saves bytes to disk.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn write_response_to_file_saves_bytes() -> Result<()> {
+        let (dir, rt, response) = mock_stream_response()?;
+        let path = dir.path().join("out.bin");
+        rt.block_on(write_response_to_file(response, &path, false, None))?;
+        ensure!(path.exists(), "output file should exist");
+        Ok(())
+    }
+
+    /// Tests track saving creates an extensioned file.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn save_track_to_disk_creates_file() -> Result<()> {
+        let (dir, rt, response) = mock_stream_response()?;
+        let path = rt.block_on(save_track_to_disk(
+            response,
+            7,
+            dir.path(),
+            MP3_320,
+            false,
+            None,
+        ))?;
+        ensure!(path.exists(), "saved file should exist");
+        Ok(())
+    }
+
+    /// Tests cover fetching returns none without a URL.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn fetch_cover_returns_none_without_url() -> Result<()> {
+        let server = MockServer::start(200, "{}")?;
+        let service = make_service(&server.base_url())?;
+        let meta = ComprehensiveMetadata::default();
+        let rt = Runtime::new()?;
+        let cover = rt.block_on(fetch_track_cover(&service, &meta, "token"));
+        ensure!(cover.is_none(), "expected no cover without URL");
+        Ok(())
+    }
+
+    /// Tests download attempt fails without a file URL.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the mock setup fails.
+    #[test]
+    fn attempt_download_errors_without_url() -> Result<()> {
+        let body = r#"{"track_id":1}"#;
+        let server = MockServer::start(200, body)?;
+        let service = make_service(&server.base_url())?;
+        let dir = TempDir::new()?;
+        let path = dir.path().join("track.mp3");
+        let rt = Runtime::new()?;
+        let cancel: Option<&AtomicBool> = None;
+        let result = rt.block_on(attempt_download(&service, 1, MP3_320, &path, cancel));
+        ensure!(result.is_err(), "expected error without URL");
+        Ok(())
+    }
 }

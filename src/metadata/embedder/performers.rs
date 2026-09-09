@@ -11,7 +11,7 @@ use std::collections::HashSet;
 /// # Returns
 ///
 /// A vector of `(person_name, role_list)` tuples.
-pub fn parse_performers(performers_str: &str) -> Vec<(&str, Vec<&str>)> {
+pub(super) fn parse_performers(performers_str: &str) -> Vec<(&str, Vec<&str>)> {
     performers_str
         .split(" - ")
         .filter_map(|group| {
@@ -36,7 +36,7 @@ pub fn parse_performers(performers_str: &str) -> Vec<(&str, Vec<&str>)> {
 /// # Returns
 ///
 /// A vector of artist name strings matching performance roles.
-pub fn extract_artist_names_from_performers(
+pub(super) fn extract_artist_names_from_performers(
     performers_str: &str,
     existing: &HashSet<String>,
 ) -> Vec<String> {
@@ -62,7 +62,7 @@ pub fn extract_artist_names_from_performers(
 /// # Returns
 ///
 /// A deduplicated vector of composer name strings.
-pub fn extract_composers_from_performers(performers_str: &str) -> Vec<String> {
+pub(super) fn extract_composers_from_performers(performers_str: &str) -> Vec<String> {
     let mut composers = Vec::new();
     for (person_name, roles) in parse_performers(performers_str) {
         let is_composer = roles
@@ -84,7 +84,7 @@ pub fn extract_composers_from_performers(performers_str: &str) -> Vec<String> {
 /// # Returns
 ///
 /// A vector of producer name strings.
-pub fn extract_producers_from_performers(performers_str: &str) -> Vec<String> {
+pub(super) fn extract_producers_from_performers(performers_str: &str) -> Vec<String> {
     let mut producers = Vec::new();
     for (person_name, roles) in parse_performers(performers_str) {
         if roles.contains(&"Producer") {
@@ -103,7 +103,7 @@ pub fn extract_producers_from_performers(performers_str: &str) -> Vec<String> {
 /// # Returns
 ///
 /// A lowercased, punctuation-normalized version of the name.
-pub fn normalize_composer_name(name: &str) -> String {
+pub(super) fn normalize_composer_name(name: &str) -> String {
     name.to_lowercase()
         .trim()
         .replace(['.', ','], "")
@@ -123,7 +123,7 @@ pub fn normalize_composer_name(name: &str) -> String {
 /// # Returns
 ///
 /// `true` if the name matches an existing entry after normalization.
-pub fn is_duplicate_composer(name: &str, existing: &HashSet<String>) -> bool {
+pub(super) fn is_duplicate_composer(name: &str, existing: &HashSet<String>) -> bool {
     let normalized = normalize_composer_name(name);
     if existing.contains(&normalized) {
         return true;

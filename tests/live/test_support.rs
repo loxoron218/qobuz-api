@@ -1,7 +1,5 @@
 //! Shared test helpers for integration tests.
 
-#![allow(dead_code)]
-
 pub mod query;
 pub mod setup;
 
@@ -54,6 +52,7 @@ static BROWSE_IDS: OnceLock<BrowseIds> = OnceLock::new();
 static TEST_KEYWORDS: OnceLock<TestKeywords> = OnceLock::new();
 
 /// Test data: IDs and queries configurable via `.env`.
+#[derive(Debug)]
 pub struct BrowseIds {
     /// Album query string.
     pub album: String,
@@ -74,19 +73,20 @@ impl BrowseIds {
     ///
     /// A new `BrowseIds` instance populated from environment.
     fn from_env() -> Self {
-        load_env_file();
+        let env = load_env_file();
 
         Self {
-            album: env_var_or("TEST_BROWSE_ALBUM_QUERY", "Kind of Blue Miles Davis"),
-            artist: env_var_or("TEST_BROWSE_ARTIST_QUERY", "Miles Davis"),
-            track: env_var_or("TEST_BROWSE_TRACK_QUERY", "So What Miles Davis"),
-            playlist: env_var_or("TEST_BROWSE_PLAYLIST_QUERY", "jazz classics"),
-            release_list_artist: env_var_or("TEST_BROWSE_RELEASE_LIST_QUERY", "John Coltrane"),
+            album: env_var_or(env, "TEST_BROWSE_ALBUM_QUERY", "Kind of Blue Miles Davis"),
+            artist: env_var_or(env, "TEST_BROWSE_ARTIST_QUERY", "Miles Davis"),
+            track: env_var_or(env, "TEST_BROWSE_TRACK_QUERY", "So What Miles Davis"),
+            playlist: env_var_or(env, "TEST_BROWSE_PLAYLIST_QUERY", "jazz classics"),
+            release_list_artist: env_var_or(env, "TEST_BROWSE_RELEASE_LIST_QUERY", "John Coltrane"),
         }
     }
 }
 
 /// Configuration for download tests.
+#[derive(Debug)]
 pub struct DownloadConfig {
     /// Query string for searching tracks.
     pub track_query: String,
@@ -103,12 +103,12 @@ impl DownloadConfig {
     ///
     /// A new `DownloadConfig` instance populated from environment.
     fn from_env() -> Self {
-        load_env_file();
+        let env = load_env_file();
 
         Self {
-            track_query: env_var_or("TEST_DOWNLOAD_TRACK_QUERY", "So What Miles Davis"),
-            album_query: env_var_or("TEST_DOWNLOAD_ALBUM_QUERY", "Kind of Blue Miles Davis"),
-            format_id: env_var_or("TEST_DOWNLOAD_FORMAT_ID", "")
+            track_query: env_var_or(env, "TEST_DOWNLOAD_TRACK_QUERY", "So What Miles Davis"),
+            album_query: env_var_or(env, "TEST_DOWNLOAD_ALBUM_QUERY", "Kind of Blue Miles Davis"),
+            format_id: env_var_or(env, "TEST_DOWNLOAD_FORMAT_ID", "")
                 .parse::<i32>()
                 .unwrap_or(MP3_320),
         }
@@ -119,12 +119,14 @@ impl DownloadConfig {
     /// # Returns
     ///
     /// A string slice containing the album query.
+    #[must_use]
     pub fn album_query(&self) -> &str {
         &self.album_query
     }
 }
 
 /// Search keywords for integration tests, configurable via `.env`.
+#[derive(Debug)]
 pub struct TestKeywords {
     /// Album search query #1.
     pub album_query_1: String,
@@ -153,21 +155,26 @@ impl TestKeywords {
     ///
     /// A `TestKeywords` with values from `.env` or defaults.
     fn from_env() -> Self {
-        load_env_file();
+        let env = load_env_file();
 
         Self {
             album_query_1: env_var_or(
+                env,
                 "TEST_SEARCH_ALBUM_QUERY_1",
                 "The Dark Side of the Moon Pink Floyd",
             ),
-            album_query_2: env_var_or("TEST_SEARCH_ALBUM_QUERY_2", "Kind of Blue Miles Davis"),
-            artist_query_1: env_var_or("TEST_SEARCH_ARTIST_QUERY_1", "Pink Floyd"),
-            artist_query_2: env_var_or("TEST_SEARCH_ARTIST_QUERY_2", "Miles Davis"),
-            track_query_1: env_var_or("TEST_SEARCH_TRACK_QUERY_1", "Comfortably Numb Pink Floyd"),
-            track_query_2: env_var_or("TEST_SEARCH_TRACK_QUERY_2", "So What Miles Davis"),
-            playlist_query_1: env_var_or("TEST_SEARCH_PLAYLIST_QUERY_1", "jazz classics"),
-            catalog_query: env_var_or("TEST_SEARCH_CATALOG_QUERY", "0190244849000"),
-            pagination_query: env_var_or("TEST_SEARCH_PAGINATION_QUERY", "Pink Floyd"),
+            album_query_2: env_var_or(env, "TEST_SEARCH_ALBUM_QUERY_2", "Kind of Blue Miles Davis"),
+            artist_query_1: env_var_or(env, "TEST_SEARCH_ARTIST_QUERY_1", "Pink Floyd"),
+            artist_query_2: env_var_or(env, "TEST_SEARCH_ARTIST_QUERY_2", "Miles Davis"),
+            track_query_1: env_var_or(
+                env,
+                "TEST_SEARCH_TRACK_QUERY_1",
+                "Comfortably Numb Pink Floyd",
+            ),
+            track_query_2: env_var_or(env, "TEST_SEARCH_TRACK_QUERY_2", "So What Miles Davis"),
+            playlist_query_1: env_var_or(env, "TEST_SEARCH_PLAYLIST_QUERY_1", "jazz classics"),
+            catalog_query: env_var_or(env, "TEST_SEARCH_CATALOG_QUERY", "0190244849000"),
+            pagination_query: env_var_or(env, "TEST_SEARCH_PAGINATION_QUERY", "Pink Floyd"),
         }
     }
 }
@@ -200,7 +207,11 @@ pub fn get_download_config() -> &'static DownloadConfig {
 }
 
 /// Loads and caches environment variables from `.env` file if present.
-pub fn load_env_file() {
+///
+/// # Returns
+///
+/// A static reference to the cached environment map.
+pub fn load_env_file() -> &'static HashMap<String, String> {
     ENV_MAP.get_or_init(|| {
         let env_path = Path::new(".env");
         if !env_path.exists() {
@@ -214,32 +225,16 @@ pub fn load_env_file() {
                 HashMap::new()
             }
         }
-    });
+    })
 }
 
 /// Reads an environment variable from the cached `.env` file, falling back to
 /// process environment variables, then to a default.
-fn env_var_or(key: &str, default: &str) -> String {
-    if let Some(map) = ENV_MAP.get()
-        && let Some(value) = map.get(key)
-    {
+fn env_var_or(map: &HashMap<String, String>, key: &str, default: &str) -> String {
+    if let Some(value) = map.get(key) {
         return value.clone();
     }
     var(key).unwrap_or_else(|_| default.to_string())
-}
-
-/// Reads an environment variable from the cached `.env` file, falling back to
-/// process environment variables.
-pub fn env_var_opt(key: &str) -> Option<String> {
-    if let Some(map) = ENV_MAP.get()
-        && let Some(value) = map.get(key)
-    {
-        return Some(value.clone());
-    }
-    let Ok(value) = var(key) else {
-        return None;
-    };
-    Some(value)
 }
 
 /// Loads and caches the `.env` file at `path`, returning an error on I/O failure.
@@ -265,6 +260,10 @@ pub fn init_logging() {
 /// # Returns
 ///
 /// The parsed `.env` map if valid credentials are found.
+///
+/// # Errors
+///
+/// Returns an error if no `.env` file exists or no valid credential pair is found.
 pub fn ensure_env_credentials() -> Result<HashMap<String, String>> {
     let env_path = Path::new(".env");
 
@@ -308,6 +307,10 @@ pub fn ensure_env_credentials() -> Result<HashMap<String, String>> {
 /// # Returns
 ///
 /// An authenticated service if credentials are valid.
+///
+/// # Errors
+///
+/// Returns an error if credentials are missing or authentication fails.
 pub fn create_authenticated_service() -> Result<QobuzApiService> {
     let env_map = ensure_env_credentials()?;
 

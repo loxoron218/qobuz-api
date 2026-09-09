@@ -8,8 +8,8 @@ macro_rules! delegate {
         #[doc = "# Errors"]
         #[doc = ""]
         #[doc = "Returns a `QobuzApiError` if not authenticated or the API request fails."]
-        $vis fn $name(&self $(, $arg: $ty)*) -> Result<$ret, crate::errors::QobuzApiError> {
-            let rt = tokio::runtime::Runtime::new()?;
+        $vis fn $name(&self $(, $arg: $ty)*) -> Result<$ret, $crate::errors::QobuzApiError> {
+            let rt = Runtime::new()?;
             rt.block_on($path(self $(, $arg)*))
         }
     };
@@ -21,10 +21,10 @@ macro_rules! retry_body {
         {
             let result = $rt.block_on($path($self, $($first_args)*));
             match result {
-                Err(crate::errors::QobuzApiError::ApiErrorResponse { message, .. })
+                Err($crate::errors::QobuzApiError::ApiErrorResponse { message, .. })
                     if message.contains("Invalid Request Signature") =>
                 {
-                    tracing::info!(
+                    info!(
                         concat!(
                             "Signature invalid for ",
                             stringify!($path),
@@ -32,7 +32,7 @@ macro_rules! retry_body {
                         )
                     );
 
-                    crate::api::auth::refresh_app_credentials($self)?;
+                    $crate::api::auth::refresh_app_credentials($self)?;
 
                     $rt.block_on($path($self, $($retry_args)*))
                 }
@@ -66,8 +66,8 @@ macro_rules! delegate_with_retry {
         #[doc = "# Errors"]
         #[doc = ""]
         #[doc = "Returns a `QobuzApiError` if not authenticated, the API request fails, or refresh fails."]
-        $vis fn $name(&mut self $($fn_args)*) -> Result<$ret, crate::errors::QobuzApiError> {
-            let rt = tokio::runtime::Runtime::new()?;
+        $vis fn $name(&mut self $($fn_args)*) -> Result<$ret, $crate::errors::QobuzApiError> {
+            let rt = Runtime::new()?;
             retry_body!($path, rt, self, first: ($($first)*), retry: ($($retry)*))
         }
     };

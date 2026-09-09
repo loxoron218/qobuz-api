@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use {
-    anyhow::{Error, Result, anyhow},
+    anyhow::{Error, Result},
     tempfile::TempDir,
     tracing::info,
 };
@@ -11,11 +11,11 @@ use {
 use qobuz_api::api::service::QobuzApiService;
 
 use crate::test_support::{
-    create_authenticated_service, get_download_config,
-    query::{find_album_id, find_track_id},
+    create_authenticated_service, get_download_config, query::find_album_id,
 };
 
 /// Setup for album download tests.
+#[derive(Debug)]
 pub struct AlbumDownloadSetup {
     /// Authenticated API service.
     pub service: QobuzApiService,
@@ -27,21 +27,15 @@ pub struct AlbumDownloadSetup {
     pub format_id: i32,
 }
 
-/// Setup for wrong credentials tests.
-pub struct WrongCredentialsSetup {
-    /// Authenticated API service (with invalid credentials).
-    pub service: QobuzApiService,
-    /// Track ID for testing.
-    pub track_id: i32,
-    /// Audio format ID.
-    pub format_id: i32,
-}
-
 /// Sets up an album download test.
 ///
 /// # Returns
 ///
 /// The album download setup if successful.
+///
+/// # Errors
+///
+/// Returns an error if authentication fails or the album cannot be found.
 pub fn setup_album_download() -> Result<AlbumDownloadSetup> {
     let config = get_download_config();
     let service = create_authenticated_service()?;
@@ -71,6 +65,10 @@ pub fn setup_album_download() -> Result<AlbumDownloadSetup> {
 /// # Returns
 ///
 /// A vector of downloaded file paths.
+///
+/// # Errors
+///
+/// Returns an error if the album download fails.
 pub fn download_album(
     setup: &mut AlbumDownloadSetup,
     max_tracks: Option<usize>,
@@ -85,26 +83,4 @@ pub fn download_album(
             max_tracks,
         )
         .map_err(Error::from)
-}
-
-/// Sets up a test with wrong credentials.
-///
-/// # Returns
-///
-/// The wrong credentials setup if successful.
-pub fn setup_wrong_credentials() -> Result<WrongCredentialsSetup> {
-    let config = get_download_config();
-
-    let mut service =
-        QobuzApiService::new().map_err(|e| anyhow!("Failed to create service: {e}"))?;
-
-    service.login("invalid_test_user@example.com", "invalid_password")?;
-
-    let track_id = find_track_id(&service, &config.track_query)?;
-
-    Ok(WrongCredentialsSetup {
-        service,
-        track_id,
-        format_id: config.format_id,
-    })
 }

@@ -175,6 +175,7 @@ static TEST_TRACKS: [TestTrack; 20] = [
 ];
 
 /// A single key-value entry parsed from `exiftool -G1` output.
+#[derive(Debug)]
 pub struct ExifEntry {
     /// `ExifTool` field name (e.g., "ID3v2.3:Album").
     pub field: String,
@@ -211,7 +212,7 @@ pub enum FieldDifference {
 }
 
 /// Aggregated comparison results across all tracks for one format.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct ReportSummary {
     /// Differences grouped by field name, each with file header and diff details.
     pub differences: HashMap<String, Vec<(String, FieldDifference)>>,
@@ -220,6 +221,7 @@ pub struct ReportSummary {
 }
 
 /// Descriptor for a test track used in metadata comparison.
+#[derive(Clone, Copy, Debug)]
 pub struct TestTrack {
     /// Primary artist name.
     pub artist: &'static str,
@@ -236,6 +238,7 @@ pub struct TestTrack {
 /// # Returns
 ///
 /// A static reference to the array of test tracks.
+#[must_use]
 pub fn test_tracks() -> &'static [TestTrack] {
     &TEST_TRACKS
 }
@@ -250,6 +253,7 @@ pub fn test_tracks() -> &'static [TestTrack] {
 /// # Returns
 ///
 /// A formatted header string with full paths.
+#[must_use]
 pub fn build_file_header(track: &TestTrack, format_label: &str) -> String {
     let format_lower = format_label.to_lowercase();
     let rust_base = track_filename_base(track, format_label);
@@ -269,6 +273,7 @@ pub fn build_file_header(track: &TestTrack, format_label: &str) -> String {
 /// # Returns
 ///
 /// A `PathBuf` pointing to the C# reference directory.
+#[must_use]
 pub fn csharp_metadata_dir(format: &str) -> PathBuf {
     Path::new(METADATA_TEST_DIR)
         .join("metadata")
@@ -285,6 +290,7 @@ pub fn csharp_metadata_dir(format: &str) -> PathBuf {
 /// # Returns
 ///
 /// A `PathBuf` pointing to the downloads directory.
+#[must_use]
 pub fn downloads_dir(format: &str) -> PathBuf {
     Path::new(METADATA_TEST_DIR).join("downloads").join(format)
 }
@@ -294,6 +300,7 @@ pub fn downloads_dir(format: &str) -> PathBuf {
 /// # Returns
 ///
 /// A `PathBuf` pointing to the JSON output directory.
+#[must_use]
 pub fn json_dir() -> PathBuf {
     Path::new(METADATA_TEST_DIR).join("metadata").join("json")
 }
@@ -307,6 +314,7 @@ pub fn json_dir() -> PathBuf {
 /// # Returns
 ///
 /// A `PathBuf` pointing to the metadata output directory.
+#[must_use]
 pub fn metadata_dir(format: &str) -> PathBuf {
     Path::new(METADATA_TEST_DIR).join("metadata").join(format)
 }
@@ -316,6 +324,7 @@ pub fn metadata_dir(format: &str) -> PathBuf {
 /// # Returns
 ///
 /// A `PathBuf` pointing to the reports directory.
+#[must_use]
 pub fn reports_dir() -> PathBuf {
     Path::new(METADATA_TEST_DIR).join("reports")
 }
@@ -330,6 +339,7 @@ pub fn reports_dir() -> PathBuf {
 /// # Returns
 ///
 /// A sanitized filename string in the form `{artist} - {title} - {format} - {id}`.
+#[must_use]
 pub fn track_filename_base(track: &TestTrack, format_label: &str) -> String {
     sanitize_filename(&format!(
         "{} - {} - {format_label} - {}",

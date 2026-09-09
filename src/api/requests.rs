@@ -1,5 +1,8 @@
 //! HTTP request primitives: GET, POST, signed GET, response parsing, retry-with-backoff.
 
+#[cfg(test)]
+mod tests;
+
 use std::time::Duration;
 
 use {reqwest::Response, serde::de::DeserializeOwned, tokio::time::sleep};
@@ -36,6 +39,7 @@ const MAX_RETRIES: u32 = 3;
 const BASE_BACKOFF_MS: u64 = 500;
 
 /// Bundles application credentials and user token for signed API requests.
+#[derive(Clone, Copy, Debug)]
 pub struct RequestAuth<'a> {
     /// Application ID.
     pub app_id: &'a str,
@@ -318,70 +322,4 @@ fn urlencoding(s: &str) -> String {
             _ => format!("%{:02X}", u32::from(c)),
         })
         .collect()
-}
-
-#[cfg(test)]
-mod tests {
-    use {
-        anyhow::{Result, anyhow, ensure},
-        reqwest::Response,
-        tokio::runtime::Runtime,
-    };
-
-    use crate::{
-        api::{
-            requests::retry_with_backoff,
-            service::QobuzApiService,
-            test_support::{SequentialMockServer, make_service},
-        },
-        errors::QobuzApiError,
-    };
-
-    fn rate_limit_response() -> (u16, String) {
-        (
-            429,
-            r#"{"status":"error","message":"rate limited"}"#.to_string(),
-        )
-    }
-
-    fn make_test_request(service: &QobuzApiService) -> Result<Response, QobuzApiError> {
-        let rt = Runtime::new()?;
-        let client = service.http_client();
-        rt.block_on(retry_with_backoff(
-            client,
-            &format!("{}/test", service.base_url()),
-            "token",
-        ))
-    }
-
-    #[test]
-    fn rate_limit_retry_exhausts_retries() -> Result<()> {
-        let server = SequentialMockServer::start(vec![
-            rate_limit_response(),
-            rate_limit_response(),
-            rate_limit_response(),
-            rate_limit_response(),
-        ])?;
-        let service = make_service(&server.base_url())?;
-        let result = make_test_request(&service);
-        let err = result.err().ok_or_else(|| anyhow!("expected error"))?;
-        ensure!(format!("{err}").contains("Rate limited"));
-        Ok(())
-    }
-
-    #[test]
-    fn rate_limit_retry_succeeds_after_backoff() -> Result<()> {
-        let server = SequentialMockServer::start(vec![
-            rate_limit_response(),
-            rate_limit_response(),
-            (
-                200,
-                r#"{"url":"https://example.com/file.flac"}"#.to_string(),
-            ),
-        ])?;
-        let service = make_service(&server.base_url())?;
-        let result = make_test_request(&service)?;
-        ensure!(result.status().is_success());
-        Ok(())
-    }
 }

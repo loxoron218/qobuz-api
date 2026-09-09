@@ -19,28 +19,28 @@ fn bench_sign_request(criterion: &mut Criterion) {
         ("request_ts".into(), "1710000000".into()),
     ];
 
-    criterion.bench_function("sign_request", |b| {
+    _ = criterion.bench_function("sign_request", |b| {
         b.iter(|| {
             black_box(sign_request(
                 black_box("GET"),
                 black_box("/album/search"),
                 black_box(&mut params),
                 black_box("secret_key_12345"),
-            ));
+            ))
         });
     });
 }
 
 /// Benchmarks track file URL signature generation.
 fn bench_sign_track_file_url(criterion: &mut Criterion) {
-    criterion.bench_function("sign_track_file_url", |b| {
+    _ = criterion.bench_function("sign_track_file_url", |b| {
         b.iter(|| {
             black_box(sign_track_file_url(
                 black_box(6),
                 black_box(12345),
                 black_box("1710000000"),
                 black_box("secret_key_12345"),
-            ));
+            ))
         });
     });
 }
@@ -48,11 +48,8 @@ fn bench_sign_track_file_url(criterion: &mut Criterion) {
 /// Benchmarks JSON search result deserialization.
 fn bench_search_deserialization(criterion: &mut Criterion) {
     let json = r#"{"albums":{"items":[{"id":"123","title":"Kind of Blue","artist":{"id":1,"name":"Miles Davis"},"tracks_count":5}],"total":1}}"#;
-
-    criterion.bench_function("search_result_deserialization", |b| {
-        b.iter(|| {
-            black_box(from_str::<Value>(black_box(json)).unwrap_or_default());
-        });
+    _ = criterion.bench_function("search_result_deserialization", |b| {
+        b.iter(|| black_box(from_str::<Value>(black_box(json)).unwrap_or_default()));
     });
 }
 

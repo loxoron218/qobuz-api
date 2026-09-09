@@ -56,29 +56,55 @@ name = "integration"
 path = "tests/integration/mock_http_client.rs"
 
 [[test]]
-name = "auth-integration"
-path = "tests/integration/auth_tests.rs"
+name = "live"
+path = "tests/live/main.rs"
 required-features = ["live-tests"]
 
-[[test]]
-name = "search-integration"
-path = "tests/integration/search_tests.rs"
-required-features = ["live-tests"]
-
-[[test]]
-name = "browse-integration"
-path = "tests/integration/browse_tests.rs"
-required-features = ["live-tests"]
-
-[[test]]
-name = "download-integration"
-path = "tests/integration/download_tests.rs"
-required-features = ["live-tests"]
-
-[[test]]
-name = "metadata-integration"
-path = "tests/integration/metadata_tests.rs"
-required-features = ["live-tests"]
+[lints.rust]
+ambiguous_negative_literals = "deny"
+closure_returning_async_block = "deny"
+dead_code_pub_in_binary = "deny"
+deprecated_in_future = "deny"
+deprecated_safe = { level = "deny", priority = -1 }
+deref_into_dyn_supertrait = "deny"
+ffi_unwind_calls = "deny"
+future_incompatible = { level = "deny", priority = -1 }
+impl_trait_redundant_captures = "deny"
+keyword_idents = { level = "deny", priority = -1 }
+let_underscore = { level = "deny", priority = -1 }
+linker_info = "deny"
+macro_use_extern_crate = "deny"
+meta_variable_misuse = "deny"
+missing_copy_implementations = "deny"
+missing_debug_implementations = "deny"
+missing_docs = "deny"
+non_ascii_idents = "deny"
+nonstandard_style = { level = "deny", priority = -1 }
+raw_borrows_via_references = "deny"
+redundant_imports = "deny"
+redundant_lifetimes = "deny"
+refining_impl_trait = { level = "deny", priority = -1 }
+rust_2018_compatibility = { level = "deny", priority = -1 }
+rust_2018_idioms = { level = "deny", priority = -1 }
+rust_2021_compatibility = { level = "deny", priority = -1 }
+rust_2024_compatibility = { level = "deny", priority = -1 }
+single_use_lifetimes = "deny"
+trivial_casts = "deny"
+trivial_numeric_casts = "deny"
+unit_bindings = "deny"
+unknown_or_malformed_diagnostic_attributes = { level = "deny", priority = -1 }
+unnameable_types = "deny"
+unreachable_pub = "deny"
+unsafe_code = "deny"
+unstable_features = "deny"
+unused = { level = "deny", priority = -1 }
+unused_crate_dependencies = "deny"
+unused_import_braces = "deny"
+unused_lifetimes = "deny"
+unused_qualifications = "deny"
+unused_results = "deny"
+variant_size_differences = "deny"
+warnings = { level = "deny", priority = -1 }
 
 [lints.clippy]
 # unused_trait_names = "deny"
@@ -87,6 +113,8 @@ allow_attributes_without_reason = "deny"
 arbitrary_source_item_ordering = "deny"
 arithmetic_side_effects = "deny"
 as_conversions = "deny"
+as_pointer_underscore = "deny"
+as_underscore = "deny"
 assertions_on_result_states = "deny"
 await_holding_lock = "deny"
 await_holding_refcell_ref = "deny"
@@ -97,6 +125,7 @@ cast_sign_loss = "deny"
 clone_on_ref_ptr = "deny"
 dbg_macro = "deny"
 debug_assert_with_mut_call = "deny"
+doc_paragraphs_missing_punctuation = "deny"
 else_if_without_else = "deny"
 empty_drop = "deny"
 empty_enum_variants_with_brackets = "deny"
@@ -117,6 +146,7 @@ iter_not_returning_iterator = "deny"
 large_futures = "deny"
 let_underscore_future = "deny"
 let_underscore_must_use = "deny"
+let_underscore_untyped = "deny"
 lossy_float_literal = "deny"
 map_err_ignore = "deny"
 map_with_unused_argument_over_ranges = "deny"
@@ -124,10 +154,13 @@ mem_forget = "deny"
 missing_assert_message = "deny"
 missing_asserts_for_indexing = "deny"
 missing_docs_in_private_items = "deny"
+missing_trait_methods = "deny"
+mod_module_files = "deny"
 multiple_unsafe_ops_per_block = "deny"
 mutex_atomic = "deny"
 mutex_integer = "deny"
 needless_raw_strings = "deny"
+negative_feature_names = "deny"
 nursery = { level = "deny", priority = -1 }
 panic = "deny"
 panic_in_result_fn = "deny"
@@ -143,6 +176,7 @@ redundant_type_annotations = "deny"
 ref_patterns = "deny"
 rest_pat_in_fully_bound_structs = "deny"
 return_and_then = "deny"
+same_name_method = "deny"
 string_lit_chars_any = "deny"
 string_slice = "deny"
 tests_outside_test_module = "deny"

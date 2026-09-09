@@ -29,7 +29,7 @@ Unofficial Rust client library for the Qobuz music streaming API, migrated from 
 - `src/models/` — serde data models for API responses
 - `src/sanitize.rs` — cross-platform filename sanitization
 - `src/signing.rs` — MD5-based request signature generation
-- `tests/integration/` — mock-HTTP integration tests and live `live-tests`
+- `tests/integration/` — mock-HTTP integration tests (`mock_http_client`) and live `live-tests` (`live/` merged binary)
 
 ## Conventions & workflow
 

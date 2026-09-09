@@ -8,10 +8,7 @@
 //!
 //! Setup: copy `.env.example` to `.env` and fill in your Qobuz credentials, then:
 //!
-//! `cargo test --test metadata-integration --features live-tests`
-
-mod metadata_test;
-mod test_support;
+//! Run with `cargo test --test live --features live-tests`.
 
 #[cfg(test)]
 mod tests {
@@ -129,7 +126,8 @@ mod tests {
                 .push((header.clone(), diff.clone()));
         }
         for (field, _) in &ignored {
-            *summary.ignored_counts.entry(field.clone()).or_default() += 1;
+            let count = summary.ignored_counts.entry(field.clone()).or_default();
+            *count = count.saturating_add(1);
         }
 
         Ok(summary)

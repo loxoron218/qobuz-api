@@ -64,13 +64,21 @@ pub async fn get_playlist(
 
 #[cfg(test)]
 mod tests {
-    use anyhow::{Result, anyhow, ensure};
+    use {
+        anyhow::{Result, anyhow, ensure},
+        tokio::runtime::Runtime,
+    };
 
     use crate::{
         api::content::playlists::{get_playlist, search_playlists},
         assert_empty_search_test, setup_test,
     };
 
+    /// Tests search playlists deserializes results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_playlists_deserializes_results() -> Result<()> {
         setup_test!(
@@ -87,6 +95,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests search playlists empty results.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_playlists_empty_results() -> Result<()> {
         assert_empty_search_test!(
@@ -97,6 +110,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get playlist by id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_playlist_by_id() -> Result<()> {
         setup_test!(
@@ -114,6 +132,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests search playlists error response.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_playlists_error_response() -> Result<()> {
         setup_test!(
@@ -128,6 +151,11 @@ mod tests {
         Ok(())
     }
 
+    /// Tests get playlist not found.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_playlist_not_found() -> Result<()> {
         setup_test!(
