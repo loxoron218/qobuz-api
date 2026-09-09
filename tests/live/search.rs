@@ -15,8 +15,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        test_support::{create_authenticated_service, get_test_keywords, init_logging},
-        test_support_imports,
+        create_authenticated_service, get_test_keywords, init_logging, test_support_imports,
     };
 
     test_support_imports!();

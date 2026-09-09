@@ -19,17 +19,20 @@ Unofficial Rust client library for the Qobuz music streaming API, migrated from 
 
 - `benches/` — criterion benchmarks (`hot_paths`)
 - `metadata_tests/` — metadata fixture data and comparison reports
-- `src/api/` — API client layer: auth (`auth/`), content (`content/` — search, browse, download), favorites, http_client, requests, response,
-  service, service_download
+- `src/api/` — API client layer: auth (`auth/` — `proofs`), content (`content/` — `albums`, `artists`, `bundle`,
+  `catalog`, `cover`, `discography`, `mixtape`, `persistence`, `playlists`, `stream`, `tracks`), favorites (`favorites/` —
+  `collection`), http_client, requests (`requests/` — `dispatch`), response, retrieval, service (`service/` — `debug`),
+  `fixture` (test-only)
 - `src/api/macros.rs` — `delegate!` / `delegate_with_retry!` macros
-- `src/api/test_support.rs` — mock HTTP client helpers
-- `src/credentials/` — `.env` I/O and web player credential extraction
-- `src/errors.rs` — typed `QobuzApiError` enum
-- `src/metadata/` — audio metadata extraction (`extractor.rs`), embedding (`embedder/`), configuration (`config.rs`)
-- `src/models/` — serde data models for API responses
+- `src/credentials/` — `.env` I/O, `Credential` type, and web player credential extraction (`web`)
+- `src/errors.rs` — typed `QobuzApiError` enum (`errors/` — `diagnostics` tests)
+- `src/metadata/` — audio metadata extraction (`extractor.rs`), embedding (`embedder/` — `core`, `credits`, `dates`,
+  `performers`), configuration (`config.rs`)
 - `src/sanitize.rs` — cross-platform filename sanitization
 - `src/signing.rs` — MD5-based request signature generation
-- `tests/integration/` — mock-HTTP integration tests (`mock_http_client`) and live `live-tests` (`live/` merged binary)
+- `tests/integration/` — offline stub HTTP client (`stub`) and live `live-tests` (`live/` binary: `live.rs` root with
+  shared setup plus `login`, `browse`, `acquisition/` (`query`, `setup`), `search`, `conformance`, `verification/`
+  (`comparison`, `exiftool`, `report`, `staging`))
 
 ## Conventions & workflow
 

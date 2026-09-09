@@ -2,7 +2,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use crate::metadata_test::{
+use crate::verification::{
     DIRECTORY_FILENAME_IGNORED, DURATION_IGNORED, ExifEntry, FILE_DATE_TIME_IGNORED,
     FILE_SIZE_IGNORED,
     FieldDifference::{self, Differs, OnlyInCSharp, OnlyInRust},

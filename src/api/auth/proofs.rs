@@ -13,8 +13,8 @@ use crate::{
             authenticate_with_env, authenticate_with_env_from, login, login_with_token,
             refresh_app_credentials,
         },
+        fixture::{MockServer, make_service_without_auth},
         service::QobuzApiService,
-        test_support::{MockServer, make_service_without_auth},
     },
     errors::QobuzApiError::{ApiErrorResponse, CredentialsError},
 };

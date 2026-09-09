@@ -1,7 +1,15 @@
-//! Shared test helpers for integration tests.
+//! Live integration tests against the real Qobuz API.
+//!
+//! Run with `cargo test --test live --features live-tests`.
+//!
+//! Shared setup for the live test modules lives in this parent index.
 
-pub mod query;
-pub mod setup;
+pub mod acquisition;
+pub mod browse;
+pub mod conformance;
+pub mod login;
+pub mod search;
+pub mod verification;
 
 use std::{
     collections::HashMap,
@@ -16,9 +24,7 @@ use {
     tracing_subscriber::{EnvFilter, fmt},
 };
 
-use qobuz_api::{
-    api::service::QobuzApiService, credentials::parse_env_file, models::file_url::quality::MP3_320,
-};
+use qobuz_api::{api::service::QobuzApiService, credentials::parse_env_file};
 
 /// Test support imports macro for integration tests.
 #[macro_export]
@@ -29,101 +35,20 @@ macro_rules! test_support_imports {
             tracing::info,
         };
 
-        use qobuz_api::models::{album::Album, artist::Artist, playlist::Playlist, track::Track};
+        use qobuz_api::api::content::{
+            albums::Album, artists::Artist, playlists::Playlist, tracks::Track,
+        };
     };
 }
-
-/// Threshold in seconds for trial duration tests.
-pub const TRIAL_DURATION_THRESHOLD_SECS: f64 = 30.0;
 
 /// Parsed `.env` file contents, cached for the lifetime of the process.
 static ENV_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
 
-/// Global download configuration, initialized once from environment variables.
-static CONFIG: OnceLock<DownloadConfig> = OnceLock::new();
-
 /// Global logging guard, ensures tracing subscriber is initialized exactly once.
 static LOG_GUARD: OnceLock<()> = OnceLock::new();
 
-/// Browse IDs for browse/content-detail tests, initialized once from environment variables.
-static BROWSE_IDS: OnceLock<BrowseIds> = OnceLock::new();
-
-/// Test keywords for search tests, initialized once from environment variables.
+/// Search keywords for search tests, initialized once from environment variables.
 static TEST_KEYWORDS: OnceLock<TestKeywords> = OnceLock::new();
-
-/// Test data: IDs and queries configurable via `.env`.
-#[derive(Debug)]
-pub struct BrowseIds {
-    /// Album query string.
-    pub album: String,
-    /// Artist query string.
-    pub artist: String,
-    /// Track query string.
-    pub track: String,
-    /// Playlist query string.
-    pub playlist: String,
-    /// Release list artist query string.
-    pub release_list_artist: String,
-}
-
-impl BrowseIds {
-    /// Creates IDs from environment variables.
-    ///
-    /// # Returns
-    ///
-    /// A new `BrowseIds` instance populated from environment.
-    fn from_env() -> Self {
-        let env = load_env_file();
-
-        Self {
-            album: env_var_or(env, "TEST_BROWSE_ALBUM_QUERY", "Kind of Blue Miles Davis"),
-            artist: env_var_or(env, "TEST_BROWSE_ARTIST_QUERY", "Miles Davis"),
-            track: env_var_or(env, "TEST_BROWSE_TRACK_QUERY", "So What Miles Davis"),
-            playlist: env_var_or(env, "TEST_BROWSE_PLAYLIST_QUERY", "jazz classics"),
-            release_list_artist: env_var_or(env, "TEST_BROWSE_RELEASE_LIST_QUERY", "John Coltrane"),
-        }
-    }
-}
-
-/// Configuration for download tests.
-#[derive(Debug)]
-pub struct DownloadConfig {
-    /// Query string for searching tracks.
-    pub track_query: String,
-    /// Query string for searching albums.
-    pub album_query: String,
-    /// Audio format ID (e.g., 3 for 320kbps MP3).
-    pub format_id: i32,
-}
-
-impl DownloadConfig {
-    /// Creates configuration from environment variables.
-    ///
-    /// # Returns
-    ///
-    /// A new `DownloadConfig` instance populated from environment.
-    fn from_env() -> Self {
-        let env = load_env_file();
-
-        Self {
-            track_query: env_var_or(env, "TEST_DOWNLOAD_TRACK_QUERY", "So What Miles Davis"),
-            album_query: env_var_or(env, "TEST_DOWNLOAD_ALBUM_QUERY", "Kind of Blue Miles Davis"),
-            format_id: env_var_or(env, "TEST_DOWNLOAD_FORMAT_ID", "")
-                .parse::<i32>()
-                .unwrap_or(MP3_320),
-        }
-    }
-
-    /// Returns the album query string.
-    ///
-    /// # Returns
-    ///
-    /// A string slice containing the album query.
-    #[must_use]
-    pub fn album_query(&self) -> &str {
-        &self.album_query
-    }
-}
 
 /// Search keywords for integration tests, configurable via `.env`.
 #[derive(Debug)]
@@ -179,15 +104,6 @@ impl TestKeywords {
     }
 }
 
-/// Returns the browse IDs from environment variables.
-///
-/// # Returns
-///
-/// A static reference to the browse IDs.
-pub fn get_browse_ids() -> &'static BrowseIds {
-    BROWSE_IDS.get_or_init(BrowseIds::from_env)
-}
-
 /// Returns the test keywords from environment variables.
 ///
 /// # Returns
@@ -195,15 +111,6 @@ pub fn get_browse_ids() -> &'static BrowseIds {
 /// A static reference to `TestKeywords` with values from `.env` or defaults.
 pub fn get_test_keywords() -> &'static TestKeywords {
     TEST_KEYWORDS.get_or_init(TestKeywords::from_env)
-}
-
-/// Returns the download configuration from environment variables.
-///
-/// # Returns
-///
-/// A static reference to the download configuration.
-pub fn get_download_config() -> &'static DownloadConfig {
-    CONFIG.get_or_init(DownloadConfig::from_env)
 }
 
 /// Loads and caches environment variables from `.env` file if present.

@@ -14,8 +14,11 @@ use {
 use crate::{
     api::{
         content::{
-            albums::get_album, check_cancel, download_io::save_track_to_disk, fetch_with_cancel,
-            stream::get_track_file_url_raw, tracks::get_track,
+            albums::{Album, get_album},
+            check_cancel, fetch_with_cancel,
+            persistence::save_track_to_disk,
+            stream::get_track_file_url_raw,
+            tracks::get_track,
         },
         requests::{RequestAuth, download_stream},
         service::QobuzApiService,
@@ -26,7 +29,6 @@ use crate::{
         embedder::embed_metadata_batch,
         extractor::{best_cover_url, extract_comprehensive_metadata},
     },
-    models::album::Album,
     sanitize::sanitize_filename,
 };
 

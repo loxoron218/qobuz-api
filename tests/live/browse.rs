@@ -12,14 +12,62 @@
 //!
 //! In CI without credentials, run `cargo test` to run only unit tests and the mock integration.
 
+use std::sync::OnceLock;
+
+use crate::{env_var_or, load_env_file};
+
+/// Browse IDs for browse/content-detail tests, initialized once from environment variables.
+static BROWSE_IDS: OnceLock<BrowseIds> = OnceLock::new();
+
+/// Test data: IDs and queries configurable via `.env`.
+#[derive(Debug)]
+pub struct BrowseIds {
+    /// Album query string.
+    pub album: String,
+    /// Artist query string.
+    pub artist: String,
+    /// Track query string.
+    pub track: String,
+    /// Playlist query string.
+    pub playlist: String,
+    /// Release list artist query string.
+    pub release_list_artist: String,
+}
+
+impl BrowseIds {
+    /// Creates IDs from environment variables.
+    ///
+    /// # Returns
+    ///
+    /// A new `BrowseIds` instance populated from environment.
+    fn from_env() -> Self {
+        let env = load_env_file();
+
+        Self {
+            album: env_var_or(env, "TEST_BROWSE_ALBUM_QUERY", "Kind of Blue Miles Davis"),
+            artist: env_var_or(env, "TEST_BROWSE_ARTIST_QUERY", "Miles Davis"),
+            track: env_var_or(env, "TEST_BROWSE_TRACK_QUERY", "So What Miles Davis"),
+            playlist: env_var_or(env, "TEST_BROWSE_PLAYLIST_QUERY", "jazz classics"),
+            release_list_artist: env_var_or(env, "TEST_BROWSE_RELEASE_LIST_QUERY", "John Coltrane"),
+        }
+    }
+}
+
+/// Returns the browse IDs from environment variables.
+///
+/// # Returns
+///
+/// A static reference to the browse IDs.
+pub fn get_browse_ids() -> &'static BrowseIds {
+    BROWSE_IDS.get_or_init(BrowseIds::from_env)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        test_support::{
-            create_authenticated_service, get_browse_ids, init_logging,
-            query::{get_album_by_query, get_artist_by_query},
-        },
-        test_support_imports,
+        acquisition::query::{get_album_by_query, get_artist_by_query},
+        browse::get_browse_ids,
+        create_authenticated_service, init_logging, test_support_imports,
     };
 
     test_support_imports!();

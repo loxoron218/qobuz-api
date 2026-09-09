@@ -1,13 +1,13 @@
 //! Content API operations: search and browse for albums, artists, tracks, playlists.
 
-pub mod album_download;
 pub mod albums;
-pub mod artist_download;
 pub mod artists;
+pub mod bundle;
 pub mod catalog;
 pub mod cover;
-pub mod download_io;
-pub mod playlist_download;
+pub mod discography;
+pub mod mixtape;
+pub mod persistence;
 pub mod playlists;
 pub mod stream;
 pub mod tracks;

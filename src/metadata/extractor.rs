@@ -1,9 +1,9 @@
 //! Metadata extraction from API models.
 
-use crate::models::{
-    album::{Album, Image},
-    artist::Artist,
-    track::Track,
+use crate::api::content::{
+    albums::{Album, Image},
+    artists::Artist,
+    tracks::Track,
 };
 
 /// Simplified album artist info for metadata passing.
@@ -84,7 +84,7 @@ pub struct ComprehensiveMetadata {
     pub cover_art_data: Option<Vec<u8>>,
 }
 
-/// Selects the best available cover art URL from an [`Image`](crate::models::album::Image).
+/// Selects the best available cover art URL from an [`Image`](crate::api::content::albums::Image).
 ///
 /// Resolution priority (highest to lowest): mega > extralarge > large > medium > thumbnail > small.
 #[must_use]
@@ -195,11 +195,11 @@ mod tests {
     };
 
     use crate::{
-        metadata::extractor::{best_cover_url, extract_comprehensive_metadata},
-        models::{
-            album::{Album, Image},
-            track::Track,
+        api::content::{
+            albums::{Album, Image},
+            tracks::Track,
         },
+        metadata::extractor::{best_cover_url, extract_comprehensive_metadata},
     };
 
     /// Makes a test track from JSON.

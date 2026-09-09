@@ -14,16 +14,18 @@ use {
 };
 
 use qobuz_api::{
-    api::service::QobuzApiService,
+    api::{
+        content::{stream::quality::MP3_320, tracks::Track},
+        service::QobuzApiService,
+    },
     metadata::{
         config::MetadataConfig, embedder::embed_metadata_in_file,
         extractor::extract_comprehensive_metadata,
     },
-    models::{file_url::quality::MP3_320, track::Track},
     sanitize::sanitize_filename,
 };
 
-use crate::metadata_test::{
+use crate::verification::{
     TestTrack, downloads_dir, json_dir, metadata_dir, reports_dir, track_filename_base,
 };
 

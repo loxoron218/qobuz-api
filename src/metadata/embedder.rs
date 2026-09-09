@@ -1,9 +1,9 @@
 //! Metadata embedding into audio files using `lofty`.
 
-mod artist_fields;
-mod basic_fields;
-mod dates;
-mod performers;
+pub mod core;
+pub mod credits;
+pub mod dates;
+pub mod performers;
 
 use std::path::{Path, PathBuf};
 
@@ -24,12 +24,12 @@ use crate::{
     metadata::{
         config::MetadataConfig,
         embedder::{
-            artist_fields::{apply_album_artist, apply_artist, apply_composer, apply_producer},
-            basic_fields::{
+            core::{
                 apply_album, apply_copyright, apply_cover_art, apply_dates, apply_disc_numbers,
                 apply_flac_custom_keys, apply_genre, apply_isrc, apply_label, apply_media_type,
                 apply_title, apply_track_numbers, apply_url,
             },
+            credits::{apply_album_artist, apply_artist, apply_composer, apply_producer},
         },
         extractor::ComprehensiveMetadata,
     },

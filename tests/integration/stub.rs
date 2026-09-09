@@ -1,4 +1,4 @@
-//! Shared mock HTTP client for integration tests.
+//! Offline stub HTTP client for integration tests.
 
 use std::pin::Pin;
 
@@ -11,11 +11,11 @@ use qobuz_api::{
 
 type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
-/// Mock HTTP client failing all requests with a not-configured error.
+/// Stub HTTP client failing all requests with a not-configured error.
 #[derive(Clone, Copy, Debug)]
-pub struct MockHttpClient;
+pub struct StubHttpClient;
 
-impl HttpClient for MockHttpClient {
+impl HttpClient for StubHttpClient {
     fn get(
         &self,
         url: &str,
@@ -24,9 +24,9 @@ impl HttpClient for MockHttpClient {
         info!(
             url,
             param_count = params.len(),
-            "mock HTTP client received GET request"
+            "stub HTTP client received GET request"
         );
-        mock_not_configured()
+        stub_not_configured()
     }
 
     fn post_form(
@@ -37,9 +37,9 @@ impl HttpClient for MockHttpClient {
         info!(
             url,
             param_count = params.len(),
-            "mock HTTP client received POST request"
+            "stub HTTP client received POST request"
         );
-        mock_not_configured()
+        stub_not_configured()
     }
 
     fn get_with_auth(
@@ -52,17 +52,17 @@ impl HttpClient for MockHttpClient {
             url,
             token_len = token.len(),
             has_range = range.is_some(),
-            "mock HTTP client received authenticated request"
+            "stub HTTP client received authenticated request"
         );
-        mock_not_configured()
+        stub_not_configured()
     }
 }
 
-/// Builds a future that always fails with a "not configured" mock error.
-fn mock_not_configured() -> BoxFuture<'static, Result<Response, QobuzApiError>> {
+/// Builds a future that always fails with a "not configured" stub error.
+fn stub_not_configured() -> BoxFuture<'static, Result<Response, QobuzApiError>> {
     Box::pin(async {
         Err(UnexpectedApiResponseError {
-            message: "mock not yet configured".to_string(),
+            message: "stub not yet configured".to_string(),
         })
     })
 }
@@ -71,11 +71,11 @@ fn mock_not_configured() -> BoxFuture<'static, Result<Response, QobuzApiError>> 
 mod tests {
     use qobuz_api::api::http_client::HttpClient;
 
-    use crate::MockHttpClient;
+    use crate::StubHttpClient;
 
     #[test]
-    fn mock_http_client_implements_trait() {
+    fn stub_client_implements_transport() {
         fn assert_impl<T: HttpClient>() {}
-        assert_impl::<MockHttpClient>();
+        assert_impl::<StubHttpClient>();
     }
 }

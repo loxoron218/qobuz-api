@@ -4,7 +4,7 @@ use std::{fs::write, path::Path, process::Command};
 
 use anyhow::{Result, anyhow, bail};
 
-use crate::metadata_test::ExifEntry;
+use crate::verification::ExifEntry;
 
 /// Extracts metadata from an audio file using `ExifTool` and saves the raw output to disk.
 ///

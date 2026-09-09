@@ -15,6 +15,70 @@
 //!
 //! In CI without credentials, run `cargo test` to run only unit tests and the mock integration.
 
+pub mod query;
+pub mod setup;
+
+use std::sync::OnceLock;
+
+use qobuz_api::api::content::stream::quality::MP3_320;
+
+use crate::{env_var_or, load_env_file};
+
+/// Threshold in seconds for trial duration tests.
+pub const TRIAL_DURATION_THRESHOLD_SECS: f64 = 30.0;
+
+/// Download configuration for acquisition tests, initialized once from environment variables.
+static CONFIG: OnceLock<DownloadConfig> = OnceLock::new();
+
+/// Configuration for download tests.
+#[derive(Debug)]
+pub struct DownloadConfig {
+    /// Query string for searching tracks.
+    pub track_query: String,
+    /// Query string for searching albums.
+    pub album_query: String,
+    /// Audio format ID (e.g., 3 for 320kbps MP3).
+    pub format_id: i32,
+}
+
+impl DownloadConfig {
+    /// Creates configuration from environment variables.
+    ///
+    /// # Returns
+    ///
+    /// A new `DownloadConfig` instance populated from environment.
+    fn from_env() -> Self {
+        let env = load_env_file();
+
+        Self {
+            track_query: env_var_or(env, "TEST_DOWNLOAD_TRACK_QUERY", "So What Miles Davis"),
+            album_query: env_var_or(env, "TEST_DOWNLOAD_ALBUM_QUERY", "Kind of Blue Miles Davis"),
+            format_id: env_var_or(env, "TEST_DOWNLOAD_FORMAT_ID", "")
+                .parse::<i32>()
+                .unwrap_or(MP3_320),
+        }
+    }
+
+    /// Returns the album query string.
+    ///
+    /// # Returns
+    ///
+    /// A string slice containing the album query.
+    #[must_use]
+    pub fn album_query(&self) -> &str {
+        &self.album_query
+    }
+}
+
+/// Returns the download configuration from environment variables.
+///
+/// # Returns
+///
+/// A static reference to the download configuration.
+pub fn get_download_config() -> &'static DownloadConfig {
+    CONFIG.get_or_init(DownloadConfig::from_env)
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs::metadata;
@@ -25,13 +89,15 @@ mod tests {
         tracing::info,
     };
 
-    use qobuz_api::models::file_url::{FileUrl, quality::MP3_320};
+    use qobuz_api::api::content::stream::{FileUrl, quality::MP3_320};
 
-    use crate::test_support::{
-        TRIAL_DURATION_THRESHOLD_SECS, create_authenticated_service, get_download_config,
-        init_logging,
-        query::{find_album_id, find_track_id},
-        setup::{download_album, setup_album_download},
+    use crate::{
+        acquisition::{
+            TRIAL_DURATION_THRESHOLD_SECS, get_download_config,
+            query::{find_album_id, find_track_id},
+            setup::{download_album, setup_album_download},
+        },
+        create_authenticated_service, init_logging,
     };
 
     #[test]

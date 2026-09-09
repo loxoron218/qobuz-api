@@ -2,8 +2,8 @@
 
 pub mod comparison;
 pub mod exiftool;
-pub mod metadata_report;
-pub mod track_ops;
+pub mod report;
+pub mod staging;
 
 use std::{
     collections::HashMap,

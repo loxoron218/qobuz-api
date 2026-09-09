@@ -9,7 +9,7 @@ use std::{
 
 use {anyhow::Result, qobuz_api::sanitize::sanitize_filename, tracing::info};
 
-use crate::metadata_test::{
+use crate::verification::{
     DIRECTORY_FILENAME_IGNORED, DURATION_IGNORED, FILE_DATE_TIME_IGNORED, FILE_SIZE_IGNORED,
     FieldDifference::{self, Differs, OnlyInCSharp, OnlyInRust},
     LAME_IGNORED, METADATA_TEST_DIR, PICTURE_IGNORED, ReportSummary, TestTrack, VERSION_IGNORED,
@@ -132,7 +132,7 @@ pub fn generate_format_report(
     format_label: &str,
     summaries: &[(&TestTrack, ReportSummary)],
 ) -> Result<()> {
-    let filename = format!("{format_label}_metadata_report.md");
+    let filename = format!("{format_label}_report.md");
     let path = Path::new(METADATA_TEST_DIR).join(&filename);
     let total_diff_fields = summaries
         .iter()

@@ -9,7 +9,7 @@ use crate::api::{
     favorites::{
         add_user_favorites, delete_user_favorites, get_user_favorite_ids, get_user_favorites,
     },
-    test_support::{MockServer, make_service, make_service_without_auth},
+    fixture::{MockServer, make_service, make_service_without_auth},
 };
 
 macro_rules! assert_favorites_success {

@@ -1,6 +1,6 @@
 //! Central API service holding authentication state and providing all operations.
 
-mod debug;
+pub mod debug;
 
 use std::{env::VarError, path::Path};
 
@@ -13,11 +13,11 @@ use crate::{
             refresh_app_credentials,
         },
         content::{
-            albums::{get_album, search_albums},
-            artists::{get_artist, get_release_list, search_artists},
-            catalog::search_catalog,
-            playlists::{get_playlist, search_playlists},
-            tracks::{get_track, search_tracks},
+            albums::{Album, get_album, search_albums},
+            artists::{Artist, get_artist, get_release_list, search_artists},
+            catalog::{ItemSearchResult, SearchResult, UserFavorites, search_catalog},
+            playlists::{Playlist, get_playlist, search_playlists},
+            tracks::{Track, get_track, search_tracks},
         },
         favorites::{
             add_user_favorites, delete_user_favorites, get_user_favorite_ids, get_user_favorites,
@@ -26,13 +26,6 @@ use crate::{
     },
     credentials::{load_app_credentials, save_app_credentials, web::extract_from_web_player},
     errors::QobuzApiError::{self, AuthenticationError, InitializationError},
-    models::{
-        album::Album,
-        artist::Artist,
-        playlist::Playlist,
-        search::{ItemSearchResult, SearchResult, UserFavorites},
-        track::Track,
-    },
 };
 
 /// Base URL for all Qobuz API v0.2 endpoints.

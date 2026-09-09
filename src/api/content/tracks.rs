@@ -8,6 +8,8 @@ use std::{
 };
 
 use {
+    serde::{Deserialize, Serialize},
+    serde_json::Value,
     tokio::time::sleep,
     tracing::{info, warn},
 };
@@ -15,12 +17,16 @@ use {
 use crate::{
     api::{
         content::{
+            albums::Album,
+            artists::Artist,
+            catalog::{ItemSearchResult, TrackSearchResponse},
             cover::fetch_track_cover,
-            download_io::{
+            get_by_id,
+            persistence::{
                 DOWNLOAD_RETRY_BASE_DELAY_MS, MAX_DOWNLOAD_RETRIES, attempt_download,
                 is_retryable_network_error,
             },
-            get_by_id, search,
+            search,
         },
         service::QobuzApiService,
     },
@@ -29,13 +35,74 @@ use crate::{
         config::MetadataConfig, embedder::embed_metadata_in_file,
         extractor::extract_comprehensive_metadata,
     },
-    models::{
-        album::Album,
-        search::{ItemSearchResult, TrackSearchResponse},
-        track::Track,
-    },
     sanitize::sanitize_filename,
 };
+
+/// Audio technical details.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct AudioInfo {
+    /// Bit depth.
+    pub bit_depth: Option<i32>,
+    /// Sample rate in kHz.
+    pub sampling_rate: Option<f64>,
+    /// Channel count.
+    pub channels: Option<i32>,
+    /// Audio codec.
+    pub codec: Option<String>,
+}
+
+/// An individual music track.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct Track {
+    /// Unique track identifier.
+    pub id: Option<i32>,
+    /// Track title.
+    pub title: Option<String>,
+    /// Version subtitle.
+    pub version: Option<String>,
+    /// ISRC code.
+    pub isrc: Option<String>,
+    /// Track position in album.
+    pub track_number: Option<i32>,
+    /// Duration in seconds.
+    pub duration: Option<i32>,
+    /// Disc number.
+    pub media_number: Option<i32>,
+    /// Classical work title.
+    pub work: Option<String>,
+    /// Parent album.
+    pub album: Option<Box<Album>>,
+    /// Primary performer.
+    pub performer: Option<Box<Artist>>,
+    /// All performers (formatted string).
+    pub performers: Option<String>,
+    /// Primary composer.
+    pub composer: Option<Box<Artist>>,
+    /// Audio technical details.
+    pub audio_info: Option<AudioInfo>,
+    /// Copyright notice.
+    pub copyright: Option<String>,
+    /// Streaming available.
+    pub streamable: Option<bool>,
+    /// Download available.
+    pub downloadable: Option<bool>,
+    /// Hi-Res available.
+    pub hires: Option<bool>,
+    /// Max bit depth.
+    pub maximum_bit_depth: Option<i32>,
+    /// Max sample rate.
+    pub maximum_sampling_rate: Option<f64>,
+    /// Max channel count.
+    pub maximum_channel_count: Option<i32>,
+    /// Original release date.
+    pub release_date_original: Option<String>,
+    /// Streaming date.
+    pub release_date_stream: Option<String>,
+    /// Explicit content flag.
+    pub parental_warning: Option<bool>,
+    /// Sales metadata.
+    pub product_sales_factors: Option<Value>,
+}
 
 /// Searches for tracks matching the query.
 ///
@@ -193,10 +260,10 @@ mod tests {
     use crate::{
         api::{
             content::{
-                download_io::detect_partial_file,
+                persistence::detect_partial_file,
                 tracks::{get_track, search_tracks},
             },
-            test_support::{MockServer, make_service},
+            fixture::{MockServer, make_service},
         },
         assert_empty_search_test,
     };

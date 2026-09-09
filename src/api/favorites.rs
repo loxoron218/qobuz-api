@@ -1,7 +1,7 @@
 //! Favorites management: add, remove, and retrieve favorites.
 
 #[cfg(test)]
-mod tests;
+pub mod collection;
 
 use {
     serde_json::Value,
@@ -10,12 +10,11 @@ use {
 
 use crate::{
     api::{
-        content::push_pagination_params,
+        content::{catalog::UserFavorites, push_pagination_params},
         requests::{RequestAuth, signed_get, signed_post},
         service::QobuzApiService,
     },
     errors::QobuzApiError,
-    models::search::UserFavorites,
 };
 
 /// Sends a signed POST to add or remove favorites and logs the result.

@@ -1,5 +1,8 @@
 //! Authentication methods for the Qobuz API.
 
+#[cfg(test)]
+pub mod proofs;
+
 use std::{
     env::{VarError, var},
     path::Path,
@@ -7,14 +10,14 @@ use std::{
 
 use {
     md5::{Digest, Md5},
-    serde::Deserialize,
+    serde::{Deserialize, Serialize},
     tokio::runtime::Runtime,
     tracing::{error, info},
 };
 
 use crate::{
     api::{http_client::HttpClient, requests::post, service::QobuzApiService},
-    credentials::{save_app_credentials, web::extract_from_web_player},
+    credentials::{Credential, save_app_credentials, web::extract_from_web_player},
     errors::QobuzApiError::{self, AuthenticationError, CredentialsError},
     signing::to_hex,
 };
@@ -33,6 +36,36 @@ struct LoginResponse {
 struct LoginUser {
     /// Numeric user ID.
     id: i64,
+}
+
+/// User subscription details.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct Subscription {
+    /// Subscription ID.
+    pub id: Option<i32>,
+    /// Subscription plan name.
+    pub offer: Option<String>,
+    /// Subscription start date.
+    pub start_date: Option<String>,
+    /// Subscription end date.
+    pub end_date: Option<String>,
+    /// Subscription status.
+    pub status: Option<String>,
+    /// Whether the subscription is active.
+    pub is_active: Option<bool>,
+}
+
+/// A Qobuz user.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct User {
+    /// User ID.
+    pub id: Option<i32>,
+    /// User credentials/capabilities.
+    pub credential: Option<Credential>,
+    /// Subscription details.
+    pub subscription: Option<Subscription>,
+    /// Display name.
+    pub display_name: Option<String>,
 }
 
 /// Authenticates using environment variables.
@@ -338,6 +371,3 @@ pub fn refresh_app_credentials(service: &mut QobuzApiService) -> Result<(), Qobu
     info!("App credentials refreshed successfully");
     Ok(())
 }
-
-#[cfg(test)]
-mod auth_tests;

@@ -2,9 +2,9 @@
 
 use anyhow::{Error, Result, anyhow};
 
-use qobuz_api::{
-    api::service::QobuzApiService,
-    models::{album::Album, artist::Artist},
+use qobuz_api::api::{
+    content::{albums::Album, artists::Artist},
+    service::QobuzApiService,
 };
 
 /// Finds a track ID by query string.

@@ -1,7 +1,7 @@
 //! Error types for the Qobuz API client.
 
 #[cfg(test)]
-mod tests;
+pub mod diagnostics;
 
 use std::io::Error as IoError;
 

@@ -1,7 +1,7 @@
 //! HTTP request primitives: GET, POST, signed GET, response parsing, retry-with-backoff.
 
 #[cfg(test)]
-mod tests;
+pub mod dispatch;
 
 use std::time::Duration;
 

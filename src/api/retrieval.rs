@@ -10,15 +10,16 @@ use {tokio::runtime::Runtime, tracing::info};
 use crate::{
     api::{
         content::{
-            album_download::download_album, artist_download::download_artist,
-            playlist_download::download_playlist, stream::get_track_file_url,
+            bundle::download_album,
+            discography::download_artist,
+            mixtape::download_playlist,
+            stream::{FileUrl, get_track_file_url},
             tracks::download_track,
         },
         service::QobuzApiService,
     },
     errors::QobuzApiError,
     metadata::config::MetadataConfig,
-    models::file_url::FileUrl,
 };
 
 impl QobuzApiService {
@@ -171,12 +172,10 @@ mod tests {
         tempfile::TempDir,
     };
 
-    use crate::{
-        api::{
-            service::QobuzApiService,
-            test_support::{MockServer, make_service, make_service_without_auth},
-        },
-        models::file_url::quality::{FLAC_16_44, FLAC_24_96, MP3_320},
+    use crate::api::{
+        content::stream::quality::{FLAC_16_44, FLAC_24_96, MP3_320},
+        fixture::{MockServer, make_service, make_service_without_auth},
+        service::QobuzApiService,
     };
 
     /// Creates an authenticated mock service with a temp dir for download tests.

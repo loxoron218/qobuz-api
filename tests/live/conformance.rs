@@ -22,18 +22,18 @@ mod tests {
     use qobuz_api::api::service::QobuzApiService;
 
     use crate::{
-        metadata_test::{
+        create_authenticated_service, init_logging,
+        verification::{
             FieldDifference::{self, Differs, OnlyInCSharp, OnlyInRust},
             ReportSummary, TestTrack, build_file_header,
             comparison::{compare_exif_metadata, group_field_pair},
             csharp_metadata_dir,
             exiftool::{extract_and_save_metadata, parse_exiftool_output},
             metadata_dir,
-            metadata_report::{generate_comparison_report, generate_format_report},
+            report::{generate_comparison_report, generate_format_report},
+            staging::{download_test_track, ensure_directories, save_track_json},
             test_tracks, track_filename_base,
-            track_ops::{download_test_track, ensure_directories, save_track_json},
         },
-        test_support::{create_authenticated_service, init_logging},
     };
 
     const FLAC_FORMAT: FormatInfo = FormatInfo {
@@ -160,8 +160,8 @@ mod tests {
 
     #[test]
     fn live_verify_reports_exist() -> Result<()> {
-        let flac_report = Path::new("metadata_tests/flac_metadata_report.md");
-        let mp3_report = Path::new("metadata_tests/mp3_metadata_report.md");
+        let flac_report = Path::new("metadata_tests/flac_report.md");
+        let mp3_report = Path::new("metadata_tests/mp3_report.md");
 
         if !flac_report.exists() || !mp3_report.exists() {
             info!("Reports not found - run live_download_all_tracks_and_compare first");

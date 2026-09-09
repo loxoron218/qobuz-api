@@ -10,8 +10,9 @@ use {
 
 use qobuz_api::api::service::QobuzApiService;
 
-use crate::test_support::{
-    create_authenticated_service, get_download_config, query::find_album_id,
+use crate::{
+    acquisition::{get_download_config, query::find_album_id},
+    create_authenticated_service,
 };
 
 /// Setup for album download tests.

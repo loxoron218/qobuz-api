@@ -18,10 +18,11 @@ use {
 
 use crate::{
     api::{
-        content::stream::get_track_file_url, requests::download_stream, service::QobuzApiService,
+        content::{albums::Album, stream::get_track_file_url},
+        requests::download_stream,
+        service::QobuzApiService,
     },
     errors::QobuzApiError::{self, Canceled, DownloadError, HttpError},
-    models::album::Album,
 };
 
 /// Maximum number of retry attempts on download network errors.
@@ -207,17 +208,16 @@ mod tests {
         api::{
             content::{
                 cover::fetch_track_cover,
-                download_io::{
+                persistence::{
                     DOWNLOAD_RETRY_BASE_DELAY_MS, MAX_DOWNLOAD_RETRIES, attempt_download,
                     is_retryable_network_error, save_track_to_disk, write_response_to_file,
                 },
-                stream::get_track_file_url,
+                stream::{get_track_file_url, quality::MP3_320},
             },
-            test_support::{MockServer, make_service, make_service_without_auth},
+            fixture::{MockServer, make_service, make_service_without_auth},
         },
         errors::QobuzApiError::{AuthenticationError, Canceled, DownloadError},
         metadata::extractor::ComprehensiveMetadata,
-        models::file_url::quality::MP3_320,
     };
 
     /// Fetches a mock streaming response with its temp dir and runtime.

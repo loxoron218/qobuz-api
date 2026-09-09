@@ -53,11 +53,11 @@ name = "hot_paths"
 
 [[test]]
 name = "integration"
-path = "tests/integration/mock_http_client.rs"
+path = "tests/integration/stub.rs"
 
 [[test]]
 name = "live"
-path = "tests/live/main.rs"
+path = "tests/live/live.rs"
 required-features = ["live-tests"]
 
 [lints.rust]

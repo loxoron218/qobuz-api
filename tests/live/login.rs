@@ -15,7 +15,7 @@ use anyhow::{Result, anyhow, ensure};
 
 use qobuz_api::api::service::QobuzApiService;
 
-use crate::test_support::ensure_env_credentials;
+use crate::ensure_env_credentials;
 
 /// User credentials loaded from the `.env` file.
 struct UserCredentials {
@@ -81,7 +81,7 @@ mod tests {
 
     use qobuz_api::errors::QobuzApiError::{ApiErrorResponse, AuthenticationError};
 
-    use crate::auth_tests::{create_service, require_user_credentials, validate_credentials};
+    use crate::login::{create_service, require_user_credentials, validate_credentials};
 
     #[test]
     fn live_email_password_login_succeeds() -> Result<()> {

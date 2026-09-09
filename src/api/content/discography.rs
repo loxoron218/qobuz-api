@@ -10,8 +10,7 @@ use tracing::info;
 use crate::{
     api::{
         content::{
-            album_download::download_album, artists::get_release_list, check_cancel,
-            fetch_with_cancel,
+            artists::get_release_list, bundle::download_album, check_cancel, fetch_with_cancel,
         },
         service::QobuzApiService,
     },
