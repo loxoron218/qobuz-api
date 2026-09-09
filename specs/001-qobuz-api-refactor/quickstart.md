@@ -14,7 +14,7 @@
 
 ```toml
 [dependencies]
-qobuz-api-rust-refactor = { path = "." }
+qobuz-api = { path = "." }
 tokio = { version = "1", features = ["full"] }
 ```
 

@@ -146,7 +146,7 @@ This principle ensures the refactor delivers on Rust's performance promise.
 ## Governance
 
 This constitution is the authoritative source of non-negotiable rules for the
-`qobuz-api-rust-refactor` project. In conflicts between this document and any
+`qobuz-api` project. In conflicts between this document and any
 other guidance (AGENTS.md, README, ad-hoc decisions), this constitution
 prevails.
 

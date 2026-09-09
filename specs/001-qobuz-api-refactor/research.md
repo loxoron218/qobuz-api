@@ -15,7 +15,7 @@
 **Implementation pattern**:
 ```rust
 let client = Client::builder()
-    .user_agent("qobuz-api-rust-refactor")
+    .user_agent("qobuz-api")
     .default_headers(default_headers)
     .build()?;
 ```

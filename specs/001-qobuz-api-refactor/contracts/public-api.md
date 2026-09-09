@@ -2,7 +2,7 @@
 
 **Feature**: `001-qobuz-api-refactor` | **Date**: 2026-04-06
 
-This document defines the public API surface of the `qobuz-api-rust-refactor` library crate.
+This document defines the public API surface of the `qobuz-api` library crate.
 
 ---
 

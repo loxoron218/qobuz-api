@@ -258,8 +258,8 @@ pub fn build_file_header(track: &TestTrack, format_label: &str) -> String {
     let format_lower = format_label.to_lowercase();
     let rust_base = track_filename_base(track, format_label);
     format!(
-        "@/qobuz-api-rust-refactor/metadata_tests/metadata/C#-songs/{format_lower}/{}.txt vs \
-         @/qobuz-api-rust-refactor/metadata_tests/metadata/{format_lower}/{rust_base}.txt",
+        "@/qobuz-api/metadata_tests/metadata/C#-songs/{format_lower}/{}.txt vs \
+         @/qobuz-api/metadata_tests/metadata/{format_lower}/{rust_base}.txt",
         track.csharp_base,
     )
 }
