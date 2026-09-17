@@ -12,9 +12,8 @@ use crate::metadata::extractor::ComprehensiveMetadata;
 /// # Returns
 ///
 /// A tuple of `(full_date_string, year)`, either of which may be `None`.
-pub(super) fn determine_primary_date(
-    meta: &ComprehensiveMetadata,
-) -> (Option<String>, Option<u32>) {
+#[must_use]
+pub fn determine_primary_date(meta: &ComprehensiveMetadata) -> (Option<String>, Option<u32>) {
     if let Some(d) = meta.album_release_date_download.as_ref() {
         return (Some(d.clone()), parse_year(d));
     }

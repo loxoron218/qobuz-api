@@ -19,7 +19,7 @@ use crate::metadata::{
         MetadataField::{
             Album, Copyright, CoverArt, DiscNumber, DiscTotal, Explicit, Genre, InvolvedPeople,
             Isrc as FieldIsrc, Label as FieldLabel, MediaType, ReleaseDate as FieldReleaseDate,
-            ReleaseYear, Title, TrackNumber, TrackTotal, Upc, Url as FieldUrl,
+            ReleaseYear, Title, TrackNumber, TrackTotal, Upc, Url,
         },
     },
     embedder::{dates::determine_primary_date, push_text},
@@ -33,7 +33,7 @@ use crate::metadata::{
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_title(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
+pub fn apply_title(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(Title) {
         return;
     }
@@ -53,7 +53,7 @@ pub(super) fn apply_title(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_album(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
+pub fn apply_album(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(Album) {
         return;
     }
@@ -73,7 +73,7 @@ pub(super) fn apply_album(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_label(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
+pub fn apply_label(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(FieldLabel) {
         return;
     }
@@ -89,7 +89,7 @@ pub(super) fn apply_label(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_genre(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
+pub fn apply_genre(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(Genre) {
         return;
     }
@@ -105,11 +105,7 @@ pub(super) fn apply_genre(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_track_numbers(
-    tag: &mut Tag,
-    meta: &ComprehensiveMetadata,
-    config: &MetadataConfig,
-) {
+pub fn apply_track_numbers(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if config.is_enabled(TrackNumber)
         && let Some(n) = meta.track_number
     {
@@ -129,11 +125,7 @@ pub(super) fn apply_track_numbers(
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_disc_numbers(
-    tag: &mut Tag,
-    meta: &ComprehensiveMetadata,
-    config: &MetadataConfig,
-) {
+pub fn apply_disc_numbers(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if config.is_enabled(DiscNumber)
         && let Some(n) = meta.disc_number
     {
@@ -153,11 +145,7 @@ pub(super) fn apply_disc_numbers(
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_copyright(
-    tag: &mut Tag,
-    meta: &ComprehensiveMetadata,
-    config: &MetadataConfig,
-) {
+pub fn apply_copyright(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(Copyright) {
         return;
     }
@@ -173,7 +161,7 @@ pub(super) fn apply_copyright(
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_isrc(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
+pub fn apply_isrc(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(FieldIsrc) {
         return;
     }
@@ -190,7 +178,7 @@ pub(super) fn apply_isrc(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &M
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (affects tag key selection)
-pub(super) fn apply_dates(
+pub fn apply_dates(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -219,8 +207,8 @@ pub(super) fn apply_dates(
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_url(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
-    if !config.is_enabled(FieldUrl) {
+pub fn apply_url(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
+    if !config.is_enabled(Url) {
         return;
     }
     if let Some(url) = meta.product_url.as_ref() {
@@ -240,11 +228,7 @@ pub(super) fn apply_url(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &Me
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_media_type(
-    tag: &mut Tag,
-    meta: &ComprehensiveMetadata,
-    config: &MetadataConfig,
-) {
+pub fn apply_media_type(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(MediaType) {
         return;
     }
@@ -261,11 +245,7 @@ pub(super) fn apply_media_type(
 /// * `tag` - Target tag to write into
 /// * `meta` - Source metadata containing cover art binary data
 /// * `config` - Field toggle configuration
-pub(super) fn apply_cover_art(
-    tag: &mut Tag,
-    meta: &ComprehensiveMetadata,
-    config: &MetadataConfig,
-) {
+pub fn apply_cover_art(tag: &mut Tag, meta: &ComprehensiveMetadata, config: &MetadataConfig) {
     if !config.is_enabled(CoverArt) {
         return;
     }
@@ -289,7 +269,7 @@ pub(super) fn apply_cover_art(
 /// * `vc` - Target `VorbisComments` tag
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
-pub(super) fn apply_flac_custom_keys(
+pub fn apply_flac_custom_keys(
     vc: &mut VorbisComments,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -321,7 +301,7 @@ pub(super) fn apply_flac_custom_keys(
     {
         vc.push("UPC".to_string(), upc.clone());
     }
-    if config.is_enabled(FieldUrl)
+    if config.is_enabled(Url)
         && let Some(url) = meta.product_url.as_ref()
     {
         let full = if url.starts_with("http") {

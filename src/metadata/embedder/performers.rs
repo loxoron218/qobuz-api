@@ -1,6 +1,6 @@
 //! Performer string parsing and composer deduplication helpers.
 
-use std::collections::HashSet;
+use std::{collections::HashSet, hash::BuildHasher};
 
 /// Parses a performers string into `(person_name, roles)` pairs.
 ///
@@ -11,7 +11,8 @@ use std::collections::HashSet;
 /// # Returns
 ///
 /// A vector of `(person_name, role_list)` tuples.
-pub(super) fn parse_performers(performers_str: &str) -> Vec<(&str, Vec<&str>)> {
+#[must_use]
+pub fn parse_performers(performers_str: &str) -> Vec<(&str, Vec<&str>)> {
     performers_str
         .split(" - ")
         .filter_map(|group| {
@@ -36,9 +37,10 @@ pub(super) fn parse_performers(performers_str: &str) -> Vec<(&str, Vec<&str>)> {
 /// # Returns
 ///
 /// A vector of artist name strings matching performance roles.
-pub(super) fn extract_artist_names_from_performers(
+#[must_use]
+pub fn extract_artist_names_from_performers<S: BuildHasher>(
     performers_str: &str,
-    existing: &HashSet<String>,
+    existing: &HashSet<String, S>,
 ) -> Vec<String> {
     let mut names = Vec::new();
     for (person_name, roles) in parse_performers(performers_str) {
@@ -62,7 +64,8 @@ pub(super) fn extract_artist_names_from_performers(
 /// # Returns
 ///
 /// A deduplicated vector of composer name strings.
-pub(super) fn extract_composers_from_performers(performers_str: &str) -> Vec<String> {
+#[must_use]
+pub fn extract_composers_from_performers(performers_str: &str) -> Vec<String> {
     let mut composers = Vec::new();
     for (person_name, roles) in parse_performers(performers_str) {
         let is_composer = roles
@@ -84,7 +87,8 @@ pub(super) fn extract_composers_from_performers(performers_str: &str) -> Vec<Str
 /// # Returns
 ///
 /// A vector of producer name strings.
-pub(super) fn extract_producers_from_performers(performers_str: &str) -> Vec<String> {
+#[must_use]
+pub fn extract_producers_from_performers(performers_str: &str) -> Vec<String> {
     let mut producers = Vec::new();
     for (person_name, roles) in parse_performers(performers_str) {
         if roles.contains(&"Producer") {
@@ -103,7 +107,8 @@ pub(super) fn extract_producers_from_performers(performers_str: &str) -> Vec<Str
 /// # Returns
 ///
 /// A lowercased, punctuation-normalized version of the name.
-pub(super) fn normalize_composer_name(name: &str) -> String {
+#[must_use]
+pub fn normalize_composer_name(name: &str) -> String {
     name.to_lowercase()
         .trim()
         .replace(['.', ','], "")
@@ -123,7 +128,8 @@ pub(super) fn normalize_composer_name(name: &str) -> String {
 /// # Returns
 ///
 /// `true` if the name matches an existing entry after normalization.
-pub(super) fn is_duplicate_composer(name: &str, existing: &HashSet<String>) -> bool {
+#[must_use]
+pub fn is_duplicate_composer<S: BuildHasher>(name: &str, existing: &HashSet<String, S>) -> bool {
     let normalized = normalize_composer_name(name);
     if existing.contains(&normalized) {
         return true;

@@ -206,10 +206,6 @@ pub fn login(
 /// # Returns
 ///
 /// The user authentication token on successful login.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if the HTTP request fails or the response contains no token.
 async fn login_inner(
     client: &dyn HttpClient,
     base_url: &str,
@@ -285,10 +281,6 @@ pub fn login_with_token(
 /// # Returns
 ///
 /// `Ok(())` on successful token validation.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if the HTTP request fails or the response contains no token.
 async fn login_with_token_inner(
     client: &dyn HttpClient,
     base_url: &str,

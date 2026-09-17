@@ -215,11 +215,6 @@ mod tests {
         assert_empty_search_test,
     };
 
-    /// Tests file extension mapping for quality IDs.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn extension_for_format_maps_types() -> Result<()> {
         ensure!(
@@ -237,11 +232,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search albums deserializes results.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_albums_deserializes_results() -> Result<()> {
         let body = r#"{"albums":{"items":[{"id":"123","title":"Test Album"}],"total":1}}"#;
@@ -255,11 +245,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search albums empty results.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_albums_empty_results() -> Result<()> {
         assert_empty_search_test!(
@@ -270,11 +255,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search albums error response.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_albums_error_response() -> Result<()> {
         let body = r#"{"status":"error","code":400,"message":"Bad request"}"#;
@@ -286,11 +266,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests get album by id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_album_by_id() -> Result<()> {
         let body = r#"{"id":"sr6843","title":"Kind of Blue","tracks_count":5}"#;
@@ -303,11 +278,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests get album with extra param.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_album_with_extra_param() -> Result<()> {
         let body = r#"{"id":"sr6843","title":"Kind of Blue","track_ids":[1,2,3]}"#;
@@ -320,11 +290,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests get album not found.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_album_not_found() -> Result<()> {
         let body = r#"{"status":"error","code":404,"message":"Album not found"}"#;

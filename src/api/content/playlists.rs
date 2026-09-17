@@ -188,11 +188,6 @@ mod tests {
         assert_empty_search_test, setup_test,
     };
 
-    /// Tests creator name prefers display name.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn creator_name_prefers_display() -> Result<()> {
         let playlist = Playlist {
@@ -229,11 +224,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests best image URL prefers rectangle banner.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn best_image_url_prefers_banner() -> Result<()> {
         let playlist = Playlist {
@@ -266,11 +256,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search playlists deserializes results.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_playlists_deserializes_results() -> Result<()> {
         setup_test!(
@@ -287,11 +272,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search playlists empty results.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_playlists_empty_results() -> Result<()> {
         assert_empty_search_test!(
@@ -302,11 +282,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests get playlist by id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_playlist_by_id() -> Result<()> {
         setup_test!(
@@ -324,11 +299,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search playlists error response.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_playlists_error_response() -> Result<()> {
         setup_test!(
@@ -343,11 +313,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests get playlist not found.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_playlist_not_found() -> Result<()> {
         setup_test!(

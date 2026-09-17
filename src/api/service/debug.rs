@@ -1,11 +1,11 @@
 //! Debug redaction for the central API service.
 
-use std::fmt::{Debug, Formatter, Result as FmtResult};
+use std::fmt::{Debug, Formatter, Result};
 
 use crate::api::service::QobuzApiService;
 
 impl Debug for QobuzApiService {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         f.debug_struct("QobuzApiService")
             .field("base_url", &self.base_url)
             .field("app_id", &self.app_id)

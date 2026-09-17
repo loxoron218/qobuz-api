@@ -174,15 +174,6 @@ mod tests {
         extractor::ComprehensiveMetadata,
     };
 
-    /// Creates a minimal FLAC file for tests.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - Destination path.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the file cannot be written.
     fn create_minimal_flac(path: &Path) -> Result<()> {
         let mut data = b"fLaC\x80\x00\x00\x22".to_vec();
         let streaminfo = [
@@ -194,15 +185,6 @@ mod tests {
         write(path, data)
     }
 
-    /// Reads the primary tag from a test file.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - Audio file path.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if probing or reading fails.
     fn get_tag(path: &Path) -> AnyhowResult<Tag> {
         let tagged_file = Probe::open(path)
             .map_err(|e| anyhow!("probe: {e}"))?
@@ -240,11 +222,6 @@ mod tests {
         }
     }
 
-    /// Tests embed flac all fields.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_flac_all_fields() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -261,11 +238,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests embed flac selective fields.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_flac_selective_fields() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -282,11 +254,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests embed cover art.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_cover_art() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -299,11 +266,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests embed cover art skipped when disabled.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_cover_art_skipped_when_disabled() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -316,11 +278,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests embed title with version.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_title_with_version() -> AnyhowResult<()> {
         let dir = TempDir::new()?;
@@ -335,11 +292,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests embed batch empty returns empty.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_batch_empty_returns_empty() -> AnyhowResult<()> {
         let results = embed_metadata_batch(&[], &MetadataConfig::all());
@@ -347,11 +299,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests embed batch processes files.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn embed_batch_processes_files() -> AnyhowResult<()> {
         let dir = TempDir::new()?;

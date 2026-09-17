@@ -178,15 +178,6 @@ mod tests {
         service::QobuzApiService,
     };
 
-    /// Creates an authenticated mock service with a temp dir for download tests.
-    ///
-    /// # Returns
-    ///
-    /// Authenticated service and temp dir for download tests.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     fn authenticated_service_with_dir() -> Result<(QobuzApiService, TempDir)> {
         let server = MockServer::start(200, "{}")?;
         let service = make_service(&server.base_url())?;
@@ -194,15 +185,6 @@ mod tests {
         Ok((service, dir))
     }
 
-    /// Creates an unauthenticated mock service with a temp dir for download tests.
-    ///
-    /// # Returns
-    ///
-    /// Unauthenticated service and temp dir for download tests.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     fn unauthenticated_service_with_dir() -> Result<(QobuzApiService, TempDir)> {
         let server = MockServer::start(200, "{}")?;
         let service = make_service_without_auth(&server.base_url())?;
@@ -210,11 +192,6 @@ mod tests {
         Ok((service, dir))
     }
 
-    /// Tests file URL retrieval fails without authentication.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn get_track_file_url_requires_auth() -> Result<()> {
         let server = MockServer::start(200, "{}")?;
@@ -224,11 +201,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests track download is cancelled when the flag is set.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_track_cancellable_returns_canceled() -> Result<()> {
         let (mut service, dir) = authenticated_service_with_dir()?;
@@ -239,11 +211,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests track download wrapper fails without authentication.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_track_requires_auth() -> Result<()> {
         let (mut service, dir) = unauthenticated_service_with_dir()?;
@@ -252,11 +219,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests album download is cancelled when the flag is set.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_album_cancellable_returns_canceled() -> Result<()> {
         let (mut service, dir) = authenticated_service_with_dir()?;
@@ -273,11 +235,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests album download wrapper fails without authentication.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_album_requires_auth() -> Result<()> {
         let (mut service, dir) = unauthenticated_service_with_dir()?;
@@ -286,11 +243,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests artist download is cancelled when the flag is set.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_artist_cancellable_returns_canceled() -> Result<()> {
         let (mut service, dir) = authenticated_service_with_dir()?;
@@ -301,11 +253,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests artist download wrapper fails without authentication.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_artist_requires_auth() -> Result<()> {
         let (mut service, dir) = unauthenticated_service_with_dir()?;
@@ -314,11 +261,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests playlist download is cancelled when the flag is set.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_playlist_cancellable_returns_canceled() -> Result<()> {
         let (mut service, dir) = authenticated_service_with_dir()?;
@@ -329,11 +271,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests playlist download wrapper fails without authentication.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn download_playlist_requires_auth() -> Result<()> {
         let (mut service, dir) = unauthenticated_service_with_dir()?;

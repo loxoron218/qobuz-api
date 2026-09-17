@@ -4,10 +4,13 @@
 pub mod quality {
     /// MP3 320kbps.
     pub const MP3_320: i32 = 5;
+
     /// FLAC 16-bit/44.1kHz (CD quality).
     pub const FLAC_16_44: i32 = 6;
+
     /// FLAC 24-bit/96kHz (Hi-Res).
     pub const FLAC_24_96: i32 = 7;
+
     /// FLAC 24-bit/192kHz (Hi-Res).
     pub const FLAC_24_192: i32 = 27;
 }
@@ -148,11 +151,6 @@ mod tests {
         quality::{FLAC_16_44, FLAC_24_96, FLAC_24_192, MP3_320},
     };
 
-    /// Tests quality constants are distinct.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn quality_constants_are_distinct() -> Result<()> {
         ensure!(MP3_320 == 5, "MP3 constant mismatch");
@@ -162,11 +160,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests file URL deserializes from JSON.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if deserialization fails.
     #[test]
     fn file_url_deserializes() -> Result<()> {
         let body = r#"{"url":"https://example.com/file.flac","format_id":6}"#;

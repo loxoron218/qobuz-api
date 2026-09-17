@@ -220,15 +220,6 @@ mod tests {
         metadata::extractor::ComprehensiveMetadata,
     };
 
-    /// Fetches a mock streaming response with its temp dir and runtime.
-    ///
-    /// # Returns
-    ///
-    /// Temp dir, runtime, and streaming response for file-write tests.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     fn mock_stream_response() -> Result<(TempDir, Runtime, Response)> {
         let server = MockServer::start(200, "audio-bytes")?;
         let service = make_service(&server.base_url())?;
@@ -242,11 +233,6 @@ mod tests {
         Ok((dir, rt, response))
     }
 
-    /// Tests retry constants have sensible values.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn retry_constants_are_sensible() -> Result<()> {
         ensure!(MAX_DOWNLOAD_RETRIES > 0, "retries should be positive");
@@ -257,11 +243,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests non-network errors are not retryable.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn non_network_error_is_not_retryable() -> Result<()> {
         let err = Canceled;
@@ -279,11 +260,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests file URL fetching fails without authentication.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn file_url_requires_auth() -> Result<()> {
         let server = MockServer::start(200, "{}")?;
@@ -299,11 +275,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests stream writing saves bytes to disk.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn write_response_to_file_saves_bytes() -> Result<()> {
         let (dir, rt, response) = mock_stream_response()?;
@@ -313,11 +284,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests track saving creates an extensioned file.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn save_track_to_disk_creates_file() -> Result<()> {
         let (dir, rt, response) = mock_stream_response()?;
@@ -333,11 +299,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests cover fetching returns none without a URL.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn fetch_cover_returns_none_without_url() -> Result<()> {
         let server = MockServer::start(200, "{}")?;
@@ -349,11 +310,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests download attempt fails without a file URL.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the mock setup fails.
     #[test]
     fn attempt_download_errors_without_url() -> Result<()> {
         let body = r#"{"track_id":1}"#;

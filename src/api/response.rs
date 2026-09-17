@@ -9,7 +9,7 @@ use {
         de::{DeserializeOwned, Error},
     },
     serde_json::{
-        Value::{self, Null, Object, String as SerdeString},
+        Value::{self, Null, Object},
         from_str, from_value,
     },
 };
@@ -119,10 +119,6 @@ pub fn truncate(s: &str, max_len: usize) -> String {
 /// # Returns
 ///
 /// An optional JSON value.
-///
-/// # Errors
-///
-/// Returns a deserialization error if deserialization fails.
 fn deserialize_optional_value<'de, D>(deserializer: D) -> Result<Option<Value>, D::Error>
 where
     D: Deserializer<'de>,
@@ -142,8 +138,10 @@ where
 fn map_value_to_string(value: Option<Value>) -> Option<String> {
     match value {
         None | Some(Null) => None,
-        Some(SerdeString(s)) => Some(s),
-        Some(v) => Some(v.to_string()),
+        Some(v) => Some(
+            v.as_str()
+                .map_or_else(|| v.to_string(), ToString::to_string),
+        ),
     }
 }
 
@@ -166,9 +164,11 @@ where
     D: Deserializer<'de>,
 {
     let value = deserialize_optional_value(deserializer)?;
+    if let Some(s) = value.as_ref().and_then(|v| v.as_str()) {
+        return Ok(Some(s.to_string()));
+    }
     match value {
         None | Some(Null) => Ok(None),
-        Some(SerdeString(s)) => Ok(Some(s)),
         Some(Object(map)) => map
             .get("display")
             .and_then(Value::as_str)
@@ -219,7 +219,8 @@ where
 {
     let value = deserialize_optional_value(deserializer)?;
     match value {
-        None | Some(Null | SerdeString(_)) => Ok(None),
+        None | Some(Null) => Ok(None),
+        Some(v) if v.is_string() => Ok(None),
         Some(v) => from_value(v).map_err(Error::custom),
     }
 }

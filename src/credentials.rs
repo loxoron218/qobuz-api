@@ -12,7 +12,7 @@ use std::{
 
 use std::{
     fs::{read_to_string, write},
-    io::Result as IoResult,
+    io::Error,
     path::Path,
 };
 
@@ -142,10 +142,6 @@ pub fn save_app_credentials(
 /// # Returns
 ///
 /// `Ok(())` on success.
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if permissions cannot be set.
 fn set_file_permissions(path: &Path) -> Result<(), QobuzApiError> {
     #[cfg(unix)]
     {
@@ -198,7 +194,7 @@ fn unquote(s: &str) -> &str {
 /// # Errors
 ///
 /// Returns an I/O error if the file cannot be read.
-pub fn parse_env_file(path: &Path) -> IoResult<Vec<(String, String)>> {
+pub fn parse_env_file(path: &Path) -> Result<Vec<(String, String)>, Error> {
     let content = read_to_string(path)?;
     Ok(content.lines().filter_map(parse_env_line).collect())
 }
@@ -214,26 +210,12 @@ mod tests {
 
     use crate::credentials::{load_app_credentials, save_app_credentials};
 
-    /// Creates a temporary env file with the given contents.
-    ///
-    /// # Arguments
-    ///
-    /// * `contents` - File contents to write.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the temp file cannot be created.
     fn create_temp_env(contents: &str) -> Result<NamedTempFile> {
         let mut file = NamedTempFile::new()?;
         write!(file, "{contents}")?;
         Ok(file)
     }
 
-    /// Tests load app credentials reads existing file.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn load_app_credentials_reads_existing_file() -> Result<()> {
         let file = create_temp_env("QOBUZ_APP_ID=12345\nQOBUZ_APP_SECRET=secret123\n")?;
@@ -244,11 +226,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests load app credentials returns none for missing fields.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn load_app_credentials_returns_none_for_missing_fields() -> Result<()> {
         let file = create_temp_env("QOBUZ_APP_ID=12345\n")?;
@@ -257,11 +234,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests load app credentials returns none for nonexistent file.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn load_app_credentials_returns_none_for_nonexistent_file() -> Result<()> {
         let result = load_app_credentials(Path::new("/nonexistent/.env"))?;
@@ -269,11 +241,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests save app credentials creates new file.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn save_app_credentials_creates_new_file() -> Result<()> {
         let dir = tempdir()?;
@@ -290,11 +257,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests save app credentials updates existing values.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn save_app_credentials_updates_existing_values() -> Result<()> {
         let file = create_temp_env("QOBUZ_APP_ID=old\nQOBUZ_APP_SECRET=oldsecret\n")?;
@@ -313,11 +275,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests save app credentials replaces commented placeholders.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn save_app_credentials_replaces_commented_placeholders() -> Result<()> {
         let file = create_temp_env("# QOBUZ_APP_ID=\n# QOBUZ_APP_SECRET=\nQOBUZ_USER_ID=123\n")?;

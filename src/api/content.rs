@@ -103,10 +103,6 @@ pub fn push_pagination_params(
 /// # Returns
 ///
 /// The deserialized response of type `T`.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if not authenticated or the API request fails.
 async fn do_signed_get<T: DeserializeOwned>(
     service: &QobuzApiService,
     endpoint: &str,
@@ -236,22 +232,12 @@ mod tests {
         errors::QobuzApiError::{self, Canceled as CanceledVariant},
     };
 
-    /// Tests cancellation check passes without a flag.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn check_cancel_without_flag_succeeds() -> Result<()> {
         check_cancel(None)?;
         Ok(())
     }
 
-    /// Tests cancellation check fails when the flag is set.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn check_cancel_with_flag_fails() -> Result<()> {
         let cancel = AtomicBool::new(true);
@@ -262,11 +248,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests fetch wrapper returns the value when not cancelled.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn fetch_with_cancel_returns_value() -> Result<()> {
         let rt = Runtime::new()?;
@@ -277,11 +258,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests fetch wrapper fails when cancelled before fetch.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the assertion fails.
     #[test]
     fn fetch_with_cancel_respects_cancel() -> Result<()> {
         let cancel = AtomicBool::new(true);

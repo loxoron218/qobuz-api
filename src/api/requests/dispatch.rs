@@ -27,10 +27,6 @@ fn rate_limit_response() -> (u16, String) {
 /// # Arguments
 ///
 /// * `service` - Test service pointing at the mock server.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if the request fails.
 fn make_test_request(service: &QobuzApiService) -> Result<Response, QobuzApiError> {
     let rt = Runtime::new()?;
     let client = service.http_client();
@@ -41,11 +37,6 @@ fn make_test_request(service: &QobuzApiService) -> Result<Response, QobuzApiErro
     ))
 }
 
-/// Tests rate limit retry exhausts retries.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn rate_limit_retry_exhausts_retries() -> Result<()> {
     let server = SequentialMockServer::start(vec![
@@ -61,11 +52,6 @@ fn rate_limit_retry_exhausts_retries() -> Result<()> {
     Ok(())
 }
 
-/// Tests rate limit retry succeeds after backoff.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn rate_limit_retry_succeeds_after_backoff() -> Result<()> {
     let server = SequentialMockServer::start(vec![
@@ -82,11 +68,6 @@ fn rate_limit_retry_succeeds_after_backoff() -> Result<()> {
     Ok(())
 }
 
-/// Tests download stream returns success on 200.
-///
-/// # Errors
-///
-/// Returns an error if the mock setup fails.
 #[test]
 fn download_stream_succeeds_on_ok() -> Result<()> {
     let server = MockServer::start(200, "bytes")?;
@@ -102,11 +83,6 @@ fn download_stream_succeeds_on_ok() -> Result<()> {
     Ok(())
 }
 
-/// Tests download stream errors on 404.
-///
-/// # Errors
-///
-/// Returns an error if the mock setup fails.
 #[test]
 fn download_stream_errors_on_not_found() -> Result<()> {
     let server = MockServer::start(404, "missing")?;

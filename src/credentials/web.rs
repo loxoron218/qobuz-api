@@ -53,10 +53,6 @@ pub async fn extract_from_web_player() -> Result<(String, String), QobuzApiError
 /// # Returns
 ///
 /// The full URL of the bundle JavaScript file.
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if the bundle URL cannot be found.
 fn extract_bundle_url(html: &str) -> Result<String, QobuzApiError> {
     let re = Regex::new(r#"src="(/[^"]*bundle[^"]*\.js)""#).map_err(|e| CredentialsError {
         message: format!("Invalid regex: {e}"),
@@ -84,10 +80,6 @@ fn extract_bundle_url(html: &str) -> Result<String, QobuzApiError> {
 /// # Returns
 ///
 /// The extracted `app_id`.
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if the production config cannot be found.
 fn extract_app_id_from_bundle(js: &str) -> Result<String, QobuzApiError> {
     let re =
         Regex::new(r#"production:\{api:\{appId:"([0-9]+)""#).map_err(|e| CredentialsError {
@@ -123,10 +115,6 @@ fn extract_app_id_from_bundle(js: &str) -> Result<String, QobuzApiError> {
 /// # Returns
 ///
 /// The extracted `app_secret`.
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if the seed data cannot be found or decoded.
 fn extract_app_secret_from_bundle(js: &str) -> Result<String, QobuzApiError> {
     let seed_timezone_re = Regex::new(
         r#"\):[a-z]\.initialSeed\("(?P<seed>.*?)",window\.utimezone\.(?P<timezone>[a-z]+)\)"#,
@@ -224,11 +212,6 @@ mod tests {
         extract_bundle_url,
     };
 
-    /// Tests extract bundle url finds js url.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_bundle_url_finds_js_url() -> Result<()> {
         let html = r#"<script src="/resources/8.1.0-b019/bundle.js"></script>"#;
@@ -240,11 +223,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests extract bundle url fails on missing url.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_bundle_url_fails_on_missing_url() -> Result<()> {
         let html = "<html>No scripts here</html>";
@@ -254,11 +232,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests extract app id from bundle finds production config.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_app_id_from_bundle_finds_production_config() -> Result<()> {
         let js = r#"integration:{api:{appId:"123",appSecret:"abc"}},production:{api:{appId:"798273057",appSecret:"05a4851e74ee47fda346f50cfdfc4f09"},braze:f}"#;
@@ -267,11 +240,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests extract app id from bundle fails on missing config.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_app_id_from_bundle_fails_on_missing_config() -> Result<()> {
         let js = r#"integration:{api:{appId:"123",appSecret:"abc"}}"#;
@@ -281,11 +249,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests extract app secret from bundle decodes base64.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_app_secret_from_bundle_decodes_base64() -> Result<()> {
         let js = concat!(
@@ -301,11 +264,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests extract app secret from bundle fails on missing seed.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn extract_app_secret_from_bundle_fails_on_missing_seed() -> Result<()> {
         let js = "no initial seed here";
@@ -315,11 +273,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests capitalize first letter works.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn capitalize_first_letter_works() -> Result<()> {
         ensure!(capitalize_first_letter("hello") == "Hello");

@@ -268,11 +268,6 @@ mod tests {
         assert_empty_search_test,
     };
 
-    /// Tests search tracks deserializes results.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_tracks_deserializes_results() -> Result<()> {
         let body = r#"{"tracks":{"items":[{"id":1,"title":"So What"}],"total":1}}"#;
@@ -286,11 +281,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search tracks empty results.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_tracks_empty_results() -> Result<()> {
         assert_empty_search_test!(
@@ -301,11 +291,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests get track by id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_track_by_id() -> Result<()> {
         let body = r#"{"id":42,"title":"Blue in Green"}"#;
@@ -317,11 +302,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search tracks error response.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_tracks_error_response() -> Result<()> {
         let body = r#"{"status":"error","code":500,"message":"Server error"}"#;
@@ -333,11 +313,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests get track not found.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn get_track_not_found() -> Result<()> {
         let body = r#"{"status":"error","code":404,"message":"Track not found"}"#;
@@ -349,11 +324,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests detect partial file returns none for missing.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn detect_partial_file_returns_none_for_missing() -> Result<()> {
         let dir = TempDir::new()?;
@@ -362,11 +332,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests detect partial file returns size for existing.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn detect_partial_file_returns_size_for_existing() -> Result<()> {
         let dir = TempDir::new()?;
@@ -376,11 +341,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests detect partial file returns none for empty.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn detect_partial_file_returns_none_for_empty() -> Result<()> {
         let dir = TempDir::new()?;

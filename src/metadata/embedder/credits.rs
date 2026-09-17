@@ -34,7 +34,7 @@ use crate::metadata::{
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (affects separator and selection logic)
-pub(super) fn apply_album_artist(
+pub fn apply_album_artist(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -140,7 +140,7 @@ fn collect_performer_artists(
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (affects separator)
-pub(super) fn apply_artist(
+pub fn apply_artist(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -183,7 +183,7 @@ pub(super) fn apply_artist(
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (affects composer selection)
-pub(super) fn apply_composer(
+pub fn apply_composer(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,
@@ -301,7 +301,7 @@ fn collect_performer_composers(
 /// * `meta` - Source metadata
 /// * `config` - Field toggle configuration
 /// * `is_flac` - Whether the output file is FLAC (producer tags are FLAC-only)
-pub(super) fn apply_producer(
+pub fn apply_producer(
     tag: &mut Tag,
     meta: &ComprehensiveMetadata,
     config: &MetadataConfig,

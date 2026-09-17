@@ -88,11 +88,6 @@ impl QobuzApiService {
     /// # Returns
     ///
     /// A `QobuzApiService` with the provided credentials.
-    ///
-    /// # Errors
-    ///
-    /// Returns a `QobuzApiError` if `app_id` or `app_secret` is empty, or HTTP client creation
-    /// fails.
     fn build_service(app_id: String, app_secret: String) -> Result<Self, QobuzApiError> {
         if app_id.is_empty() || app_secret.is_empty() {
             return Err(InitializationError {

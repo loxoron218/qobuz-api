@@ -23,21 +23,11 @@ macro_rules! assert_favorites_success {
     }};
 }
 
-/// Tests add user favorites success.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn add_user_favorites_success() -> Result<()> {
     assert_favorites_success!(add_user_favorites, &[123, 456], "track")
 }
 
-/// Tests add user favorites not authenticated.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn add_user_favorites_not_authenticated() -> Result<()> {
     let server = MockServer::start(200, "{}")?;
@@ -50,21 +40,11 @@ fn add_user_favorites_not_authenticated() -> Result<()> {
     Ok(())
 }
 
-/// Tests delete user favorites success.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn delete_user_favorites_success() -> Result<()> {
     assert_favorites_success!(delete_user_favorites, &[123], "album")
 }
 
-/// Tests delete user favorites not authenticated.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn delete_user_favorites_not_authenticated() -> Result<()> {
     let server = MockServer::start(200, "{}")?;
@@ -75,11 +55,6 @@ fn delete_user_favorites_not_authenticated() -> Result<()> {
     Ok(())
 }
 
-/// Tests get user favorites success.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn get_user_favorites_success() -> Result<()> {
     let body = r#"{"albums":{"items":[{"id":"123","title":"Fav Album"}],"total":1},"artists":null,"tracks":null}"#;
@@ -94,11 +69,6 @@ fn get_user_favorites_success() -> Result<()> {
     Ok(())
 }
 
-/// Tests get user favorites empty.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn get_user_favorites_empty() -> Result<()> {
     let body = r#"{"albums":{"items":[],"total":0},"artists":null,"tracks":null}"#;
@@ -112,11 +82,6 @@ fn get_user_favorites_empty() -> Result<()> {
     Ok(())
 }
 
-/// Tests get user favorites not authenticated.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn get_user_favorites_not_authenticated() -> Result<()> {
     let server = MockServer::start(200, "{}")?;
@@ -127,11 +92,6 @@ fn get_user_favorites_not_authenticated() -> Result<()> {
     Ok(())
 }
 
-/// Tests get user favorite ids success.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn get_user_favorite_ids_success() -> Result<()> {
     let body = r#"{"album_ids":[1,2,3],"artist_ids":[4,5],"track_ids":[6,7,8,9],"albums":null,"artists":null,"tracks":null}"#;
@@ -146,11 +106,6 @@ fn get_user_favorite_ids_success() -> Result<()> {
     Ok(())
 }
 
-/// Tests get user favorite ids not authenticated.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn get_user_favorite_ids_not_authenticated() -> Result<()> {
     let server = MockServer::start(200, "{}")?;
@@ -161,11 +116,6 @@ fn get_user_favorite_ids_not_authenticated() -> Result<()> {
     Ok(())
 }
 
-/// Tests add favorites api error.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn add_favorites_api_error() -> Result<()> {
     let body = r#"{"status":"error","code":400,"message":"Invalid item type"}"#;
@@ -179,11 +129,6 @@ fn add_favorites_api_error() -> Result<()> {
     Ok(())
 }
 
-/// Tests get favorites with pagination.
-///
-/// # Errors
-///
-/// Returns an error if the test setup or assertion fails.
 #[test]
 fn get_favorites_with_pagination() -> Result<()> {
     let body = r#"{"tracks":{"items":[{"id":1,"title":"Song"}],"total":100,"limit":1,"offset":0},"albums":null,"artists":null}"#;

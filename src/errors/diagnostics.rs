@@ -12,21 +12,11 @@ use crate::errors::QobuzApiError::{
 
 fn assert_send_sync_static<T: Send + Sync + 'static>() {}
 
-/// Tests all variants satisfy send sync static.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn all_variants_satisfy_send_sync_static() {
     assert_send_sync_static::<QobuzApiError>();
 }
 
-/// Tests authentication error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn authentication_error_display() {
     let err = AuthenticationError {
@@ -37,11 +27,6 @@ fn authentication_error_display() {
     assert!(msg.contains("bad token"));
 }
 
-/// Tests http error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn http_error_display() {
     let Ok(rt) = Runtime::new() else {
@@ -54,11 +39,6 @@ fn http_error_display() {
     assert!(msg.contains("HTTP request failed"));
 }
 
-/// Tests io error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn io_error_display() {
     let err = IoError(Error::new(NotFound, "file missing"));
@@ -66,11 +46,6 @@ fn io_error_display() {
     assert!(msg.contains("I/O error"));
 }
 
-/// Tests api error response display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn api_error_response_display() {
     let err = ApiErrorResponse {
@@ -83,11 +58,6 @@ fn api_error_response_display() {
     assert!(msg.contains("Forbidden"));
 }
 
-/// Tests api response parse error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn api_response_parse_error_display() {
     let err = ApiResponseParseError {
@@ -99,11 +69,6 @@ fn api_response_parse_error_display() {
     assert!(msg.contains("not json"));
 }
 
-/// Tests initialization error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn initialization_error_display() {
     let err = InitializationError {
@@ -113,11 +78,6 @@ fn initialization_error_display() {
     assert!(msg.contains("Service initialization failed"));
 }
 
-/// Tests credentials error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn credentials_error_display() {
     let err = CredentialsError {
@@ -127,11 +87,6 @@ fn credentials_error_display() {
     assert!(msg.contains("Invalid credentials"));
 }
 
-/// Tests download error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn download_error_display() {
     let err = DownloadError {
@@ -141,11 +96,6 @@ fn download_error_display() {
     assert!(msg.contains("Download failed"));
 }
 
-/// Tests metadata error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn metadata_error_display() {
     let err = MetadataError("tag write failed".into());
@@ -153,11 +103,6 @@ fn metadata_error_display() {
     assert!(msg.contains("Metadata error"));
 }
 
-/// Tests resource not found error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn resource_not_found_error_display() {
     let err = ResourceNotFoundError {
@@ -169,11 +114,6 @@ fn resource_not_found_error_display() {
     assert!(msg.contains("123"));
 }
 
-/// Tests rate limit error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn rate_limit_error_display() {
     let err = RateLimitError {
@@ -183,11 +123,6 @@ fn rate_limit_error_display() {
     assert!(msg.contains("Rate limited"));
 }
 
-/// Tests invalid parameter error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn invalid_parameter_error_display() {
     let err = InvalidParameterError {
@@ -197,11 +132,6 @@ fn invalid_parameter_error_display() {
     assert!(msg.contains("Invalid parameter"));
 }
 
-/// Tests unexpected api response error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn unexpected_api_response_error_has_remediation() {
     let err = UnexpectedApiResponseError {
@@ -211,11 +141,6 @@ fn unexpected_api_response_error_has_remediation() {
     assert!(msg.contains("unexpected") || msg.contains("response") || msg.contains("missing"));
 }
 
-/// Tests canceled error display.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn canceled_error_display() {
     let err = Canceled;
@@ -223,11 +148,6 @@ fn canceled_error_display() {
     assert_eq!(msg, "Download cancelled");
 }
 
-/// Tests sc006 authentication error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn sc006_authentication_error_has_remediation() {
     let err = AuthenticationError {
@@ -239,11 +159,6 @@ fn sc006_authentication_error_has_remediation() {
     assert!(msg.contains("credentials") || msg.contains("check") || msg.contains("verify"));
 }
 
-/// Tests sc006 credentials error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn sc006_credentials_error_has_remediation() {
     let err = CredentialsError {
@@ -255,11 +170,6 @@ fn sc006_credentials_error_has_remediation() {
     assert!(msg.contains("configure") || msg.contains("manual") || msg.contains("set"));
 }
 
-/// Tests sc006 resource not found error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn sc006_resource_not_found_error_has_remediation() {
     let err = ResourceNotFoundError {
@@ -270,11 +180,6 @@ fn sc006_resource_not_found_error_has_remediation() {
     assert!(msg.contains("not found"));
 }
 
-/// Tests sc006 download error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn sc006_download_error_has_remediation() {
     let err = DownloadError {
@@ -284,11 +189,6 @@ fn sc006_download_error_has_remediation() {
     assert!(msg.contains("check") || msg.contains("disk") || msg.contains("permission"));
 }
 
-/// Tests sc006 initialization error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn sc006_initialization_error_has_remediation() {
     let err = InitializationError {
@@ -299,11 +199,6 @@ fn sc006_initialization_error_has_remediation() {
     assert!(msg.contains("verify") || msg.contains("check") || msg.contains("must"));
 }
 
-/// Tests sc006 rate limit error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn sc006_rate_limit_error_has_remediation() {
     let err = RateLimitError {
@@ -313,11 +208,6 @@ fn sc006_rate_limit_error_has_remediation() {
     assert!(msg.contains("wait") || msg.contains("retry") || msg.contains("limited"));
 }
 
-/// Tests sc006 metadata error has remediation.
-///
-/// # Panics
-///
-/// Panics if the assertion fails.
 #[test]
 fn sc006_metadata_error_has_remediation() {
     let err = MetadataError(

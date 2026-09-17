@@ -30,10 +30,6 @@ use crate::{
 /// # Returns
 ///
 /// `Ok(())` on success.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if not authenticated or the API request fails.
 async fn modify_favorites(
     service: &QobuzApiService,
     item_ids: &[i32],
@@ -146,10 +142,6 @@ pub async fn delete_user_favorites(
 /// # Returns
 ///
 /// The user's favorited items.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` if not authenticated or the API request fails.
 async fn fetch_user_favorites(
     service: &QobuzApiService,
     params: &mut Vec<(String, String)>,

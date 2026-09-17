@@ -49,10 +49,6 @@ fn require_user_credentials() -> Result<UserCredentials> {
 }
 
 /// Ensures user credentials exist in the environment without loading them.
-///
-/// # Errors
-///
-/// Returns an error if no valid credentials are found.
 fn validate_credentials() -> Result<()> {
     let credentials = require_user_credentials()?;
     ensure!(

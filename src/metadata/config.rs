@@ -151,11 +151,6 @@ mod tests {
         MetadataField::{Comment, Producer, Title},
     };
 
-    /// Tests default excludes comment.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn default_excludes_comment() -> Result<()> {
         let config = MetadataConfig::default();
@@ -164,11 +159,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests all enables every field.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn all_enables_every_field() -> Result<()> {
         let config = MetadataConfig::all();
@@ -177,11 +167,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests set toggles field.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn set_toggles_field() -> Result<()> {
         let mut config = MetadataConfig::default();

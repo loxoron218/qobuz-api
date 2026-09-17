@@ -74,7 +74,6 @@ pub fn extract_metadata_exiftool(file_path: &Path) -> Result<Vec<ExifEntry>> {
 /// # Returns
 ///
 /// A vector of parsed `ExifEntry` instances.
-#[must_use]
 pub fn parse_exiftool_output(content: &str) -> Vec<ExifEntry> {
     let mut entries = Vec::new();
     for line in content.lines() {

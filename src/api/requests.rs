@@ -20,7 +20,7 @@ use crate::{
 macro_rules! signed_request {
     (
         $(#[$meta:meta])*
-        $vis:vis fn $name:ident($client:ident, $base_url:ident, $endpoint:ident, $params:ident, $auth:ident) -> $body:tt
+        $vis:vis fn $name:ident($client:ident, $base_url:ident, $endpoint:ident, $params:ident, $auth:ident) -> $ret:ty $body:block
     ) => {
         $(#[$meta])*
         $vis async fn $name<T: DeserializeOwned>(
@@ -29,12 +29,13 @@ macro_rules! signed_request {
             $endpoint: &str,
             $params: &mut Vec<(String, String)>,
             $auth: &RequestAuth<'_>,
-        ) -> Result<T, QobuzApiError> $body
+        ) -> $ret $body
     };
 }
 
 /// Maximum number of retry attempts on rate limiting.
 const MAX_RETRIES: u32 = 3;
+
 /// Base delay in milliseconds for exponential backoff.
 const BASE_BACKOFF_MS: u64 = 500;
 
@@ -81,10 +82,6 @@ fn append_signature(
 /// # Returns
 ///
 /// Parsed JSON response of type `T`.
-///
-/// # Errors
-///
-/// Returns a `QobuzApiError` on HTTP failures or JSON parse errors.
 async fn execute_post<T: DeserializeOwned>(
     client: &dyn HttpClient,
     base_url: &str,
@@ -120,7 +117,7 @@ signed_request!(
     /// # Errors
     ///
     /// Returns a `QobuzApiError` on HTTP failures, rate limiting, or JSON parse errors.
-    pub fn signed_get(client, base_url, endpoint, params, auth) -> {
+    pub fn signed_get(client, base_url, endpoint, params, auth) -> Result<T, QobuzApiError> {
         append_signature(params, "GET", endpoint, auth);
 
         let url = build_url_with_params(base_url, endpoint, params);
@@ -182,7 +179,7 @@ signed_request!(
     /// # Errors
     ///
     /// Returns a `QobuzApiError` on HTTP failures, rate limiting, or JSON parse errors.
-    pub fn signed_post(client, base_url, endpoint, params, auth) -> {
+    pub fn signed_post(client, base_url, endpoint, params, auth) -> Result<T, QobuzApiError> {
         params.push((
             "user_auth_token".to_string(),
             auth.user_auth_token.to_string(),

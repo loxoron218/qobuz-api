@@ -51,6 +51,7 @@ pub const LAME_IGNORED: &[&str] = &[
     "Lame VBR Quality",
     "MS Stereo",
 ];
+
 /// Root directory for metadata test artifacts.
 pub const METADATA_TEST_DIR: &str = "metadata_tests";
 

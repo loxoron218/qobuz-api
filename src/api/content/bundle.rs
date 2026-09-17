@@ -47,10 +47,6 @@ use crate::{
 /// A tuple of `(track_ids, dir_path)` where:
 /// - `track_ids`: List of track IDs from the album
 /// - `dir_path`: The created output directory path
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if the directory cannot be created.
 fn prepare_album_directory(
     album: &Album,
     output_dir: &Path,
@@ -91,11 +87,6 @@ fn prepare_album_directory(
 /// # Returns
 ///
 /// A vector of paths to the downloaded track files.
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if cancellation is requested, track download fails,
-/// or metadata embedding fails.
 async fn download_album_tracks(
     service: &QobuzApiService,
     track_ids: &[i32],
@@ -212,10 +203,6 @@ async fn download_album_tracks(
 /// # Returns
 ///
 /// `Ok(())` on success.
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if track fetching or metadata embedding fails.
 async fn embed_album_metadata(
     service: &QobuzApiService,
     album: &Album,
@@ -355,10 +342,6 @@ fn warn_if_not_resumed(had_offset: bool, resumed: bool, track_id: i32) {
 /// # Returns
 ///
 /// Cover art image bytes, or `None` if cover art is disabled or unavailable.
-///
-/// # Errors
-///
-/// Returns `QobuzApiError` if authentication is missing.
 async fn download_cover_data(
     service: &QobuzApiService,
     album: &Album,

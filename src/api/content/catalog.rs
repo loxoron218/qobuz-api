@@ -142,11 +142,6 @@ mod tests {
         fixture::{MockServer, make_service},
     };
 
-    /// Tests search catalog groups all types.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_catalog_groups_all_types() -> Result<()> {
         let body = r#"{"albums":{"items":[],"total":0},"artists":{"items":[],"total":0},"tracks":{"items":[],"total":0},"playlists":{"items":[],"total":0}}"#;
@@ -161,11 +156,6 @@ mod tests {
         Ok(())
     }
 
-    /// Tests search catalog error stops all.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the test setup or assertion fails.
     #[test]
     fn search_catalog_error_stops_all() -> Result<()> {
         let body = r#"{"status":"error","code":500,"message":"Fail"}"#;

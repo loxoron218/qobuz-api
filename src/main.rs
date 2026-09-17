@@ -7,14 +7,6 @@ use {
 };
 
 /// Application entrypoint.
-///
-/// # Errors
-///
-/// Returns an error if the tracing subscriber fails to initialize.
-///
-/// # Panics
-///
-/// Panics if the Tokio runtime fails to initialize.
 #[main]
 async fn main() -> Result<()> {
     fmt()
