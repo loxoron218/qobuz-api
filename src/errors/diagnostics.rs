@@ -10,6 +10,7 @@ use crate::errors::QobuzApiError::{
     RateLimitError, ResourceNotFoundError, UnexpectedApiResponseError,
 };
 
+/// Asserts that a type satisfies `Send + Sync + 'static` bounds.
 fn assert_send_sync_static<T: Send + Sync + 'static>() {}
 
 #[test]

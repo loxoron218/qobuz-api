@@ -9,45 +9,36 @@ use qobuz_api::{
     errors::QobuzApiError::{self, UnexpectedApiResponseError},
 };
 
-type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
-
 /// Stub HTTP client failing all requests with a not-configured error.
 #[derive(Clone, Copy, Debug)]
 pub struct StubHttpClient;
 
-impl HttpClient for StubHttpClient {
-    fn get(
-        &self,
-        url: &str,
-        params: &[(&str, &str)],
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
-        info!(
-            url,
-            param_count = params.len(),
-            "stub HTTP client received GET request"
-        );
-        stub_not_configured()
-    }
+/// Generates an unauthenticated stub `HttpClient` method.
+///
+/// Delegates to `stub_with_log` with the given request kind label.
+macro_rules! stub_unauth_method {
+    ($name:ident, $kind:expr) => {
+        fn $name(
+            &self,
+            url: &str,
+            params: &[(&str, &str)],
+        ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
+            stub_with_log(url, params, $kind)
+        }
+    };
+}
 
-    fn post_form(
-        &self,
-        url: &str,
-        params: &[(&str, &str)],
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
-        info!(
-            url,
-            param_count = params.len(),
-            "stub HTTP client received POST request"
-        );
-        stub_not_configured()
-    }
+impl HttpClient for StubHttpClient {
+    stub_unauth_method!(get, "GET");
+
+    stub_unauth_method!(post_form, "POST");
 
     fn get_with_auth(
         &self,
         url: &str,
         token: &str,
         range: Option<&str>,
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
         info!(
             url,
             token_len = token.len(),
@@ -58,8 +49,34 @@ impl HttpClient for StubHttpClient {
     }
 }
 
+/// Logs a stub GET/POST request and returns a not-configured error future.
+///
+/// # Arguments
+///
+/// * `url` - Request URL.
+/// * `params` - Key-value query or form parameter pairs.
+/// * `kind` - Request kind label (`"GET"` or `"POST"`).
+///
+/// # Returns
+///
+/// A future that always fails with a stub not-configured error.
+fn stub_with_log(
+    url: &str,
+    params: &[(&str, &str)],
+    kind: &str,
+) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + 'static>> {
+    info!(
+        url,
+        param_count = params.len(),
+        kind,
+        "stub HTTP client received request"
+    );
+    stub_not_configured()
+}
+
 /// Builds a future that always fails with a "not configured" stub error.
-fn stub_not_configured() -> BoxFuture<'static, Result<Response, QobuzApiError>> {
+fn stub_not_configured()
+-> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + 'static>> {
     Box::pin(async {
         Err(UnexpectedApiResponseError {
             message: "stub not yet configured".to_string(),

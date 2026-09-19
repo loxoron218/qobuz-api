@@ -19,6 +19,15 @@ use crate::{
     errors::QobuzApiError::{ApiErrorResponse, CredentialsError},
 };
 
+/// Builds a mock environment map from key-value pairs.
+///
+/// # Arguments
+///
+/// * `pairs` - Key-value pairs to insert into the mock environment.
+///
+/// # Returns
+///
+/// A map of environment variable names to values.
 fn mock_env(pairs: &[(&str, &str)]) -> HashMap<String, String> {
     pairs
         .iter()
@@ -26,6 +35,15 @@ fn mock_env(pairs: &[(&str, &str)]) -> HashMap<String, String> {
         .collect()
 }
 
+/// Builds an environment reader closure over a mock environment map.
+///
+/// # Arguments
+///
+/// * `env` - Mock environment variables.
+///
+/// # Returns
+///
+/// A closure returning the value for a key or `NotPresent`.
 fn env_reader(env: &HashMap<String, String>) -> impl Fn(&str) -> Result<String, VarError> + '_ {
     move |key| env.get(key).cloned().ok_or(NotPresent)
 }

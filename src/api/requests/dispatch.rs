@@ -15,6 +15,11 @@ use crate::{
     errors::QobuzApiError,
 };
 
+/// Builds a rate-limited mock response for retry tests.
+///
+/// # Returns
+///
+/// Status code and body for a rate-limited response.
 fn rate_limit_response() -> (u16, String) {
     (
         429,

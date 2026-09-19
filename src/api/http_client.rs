@@ -12,9 +12,6 @@ use {
 
 use crate::errors::QobuzApiError;
 
-/// Type alias for a pinned, boxed, `Send` future.
-type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
-
 /// HTTP client trait enabling deterministic testing via mock implementations.
 ///
 /// Uses boxed futures instead of `async fn` to remain object-safe for `dyn` dispatch.
@@ -33,7 +30,7 @@ pub trait HttpClient: Send + Sync {
         &self,
         url: &str,
         params: &[(&str, &str)],
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>>;
+    ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>>;
 
     /// Sends a POST request with form parameters.
     ///
@@ -49,7 +46,7 @@ pub trait HttpClient: Send + Sync {
         &self,
         url: &str,
         params: &[(&str, &str)],
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>>;
+    ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>>;
 
     /// Sends an authenticated GET request with optional Range header.
     ///
@@ -67,7 +64,7 @@ pub trait HttpClient: Send + Sync {
         url: &str,
         token: &str,
         range: Option<&str>,
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>>;
+    ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>>;
 }
 
 /// Production HTTP client wrapping `reqwest::Client`.
@@ -127,7 +124,7 @@ impl HttpClient for ReqwestClient {
         &self,
         url: &str,
         params: &[(&str, &str)],
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
         let fut = self.inner.get(url).query(params).send();
         Box::pin(async move {
             let resp = fut.await?;
@@ -139,7 +136,7 @@ impl HttpClient for ReqwestClient {
         &self,
         url: &str,
         params: &[(&str, &str)],
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
         let params: Vec<(String, String)> = params
             .iter()
             .map(|(k, v)| ((*k).to_string(), (*v).to_string()))
@@ -157,7 +154,7 @@ impl HttpClient for ReqwestClient {
         url: &str,
         token: &str,
         range: Option<&str>,
-    ) -> BoxFuture<'_, Result<Response, QobuzApiError>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
         let mut req = self.inner.get(url).header("X-User-Auth-Token", token);
 
         if let Some(r) = range {

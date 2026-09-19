@@ -225,6 +225,12 @@ pub fn make_service_without_auth(base_url: &str) -> Result<QobuzApiService> {
     Ok(QobuzApiService::new_test(client.into_boxed(), base_url))
 }
 
+/// Serves a single mock HTTP response on a stream.
+///
+/// # Arguments
+///
+/// * `stream` - TCP stream to serve the response on.
+/// * `response` - Raw HTTP response bytes to write.
 fn serve_response(mut stream: TcpStream, response: &[u8]) {
     let mut buf = [0u8; 8192];
     drop(stream.read(&mut buf));
@@ -232,6 +238,13 @@ fn serve_response(mut stream: TcpStream, response: &[u8]) {
     drop(stream.flush());
 }
 
+/// Serves a mock response for up to `max_requests` connections.
+///
+/// # Arguments
+///
+/// * `listener` - TCP listener to accept connections on.
+/// * `bytes` - Raw HTTP response bytes to serve.
+/// * `max_requests` - Maximum requests to serve.
 fn serve_loop(listener: &TcpListener, bytes: &[u8], max_requests: usize) {
     for _ in 0..max_requests {
         if let Ok(s) = listener.accept().map(|(s, _)| s) {
@@ -255,6 +268,12 @@ fn spawn_server(listener: TcpListener, bytes: Vec<u8>, max_requests: usize) {
     );
 }
 
+/// Serves queued mock responses in order, one per connection.
+///
+/// # Arguments
+///
+/// * `listener` - TCP listener to accept connections on.
+/// * `responses` - Raw HTTP response bytes to serve in order.
 fn serve_sequential(listener: &TcpListener, responses: &[Vec<u8>]) {
     for response in responses {
         if let Ok(s) = listener.accept().map(|(s, _)| s) {
