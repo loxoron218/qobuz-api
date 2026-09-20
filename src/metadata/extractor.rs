@@ -84,7 +84,7 @@ pub struct ComprehensiveMetadata {
     pub cover_art_data: Option<Vec<u8>>,
 }
 
-/// Selects the best available cover art URL from an [`Image`](crate::api::content::albums::Image).
+/// Selects the best available cover art URL from an [`Image`].
 ///
 /// Resolution priority (highest to lowest): mega > extralarge > large > medium > thumbnail > small.
 #[must_use]

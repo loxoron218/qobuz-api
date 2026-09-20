@@ -9,10 +9,6 @@ use qobuz_api::{
     errors::QobuzApiError::{self, UnexpectedApiResponseError},
 };
 
-/// Stub HTTP client failing all requests with a not-configured error.
-#[derive(Clone, Copy, Debug)]
-pub struct StubHttpClient;
-
 /// Generates an unauthenticated stub `HttpClient` method.
 ///
 /// Delegates to `stub_with_log` with the given request kind label.
@@ -27,6 +23,10 @@ macro_rules! stub_unauth_method {
         }
     };
 }
+
+/// Stub HTTP client failing all requests with a not-configured error.
+#[derive(Clone, Copy, Debug)]
+pub struct StubHttpClient;
 
 impl HttpClient for StubHttpClient {
     stub_unauth_method!(get, "GET");

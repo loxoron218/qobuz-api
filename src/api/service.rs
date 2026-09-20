@@ -1,6 +1,9 @@
 //! Central API service holding authentication state and providing all operations.
 
 pub mod debug;
+pub mod discovery;
+pub mod library;
+pub mod lookup;
 
 use std::{env::VarError, path::Path};
 
@@ -11,16 +14,6 @@ use crate::{
         auth::{
             authenticate_with_env, authenticate_with_env_from, login, login_with_token,
             refresh_app_credentials,
-        },
-        content::{
-            albums::{Album, get_album, search_albums},
-            artists::{Artist, get_artist, get_release_list, search_artists},
-            catalog::{ItemSearchResult, SearchResult, UserFavorites, search_catalog},
-            playlists::{Playlist, get_playlist, search_playlists},
-            tracks::{Track, get_track, search_tracks},
-        },
-        favorites::{
-            add_user_favorites, delete_user_favorites, get_user_favorite_ids, get_user_favorites,
         },
         http_client::{HttpClient, ReqwestClient},
     },
@@ -50,34 +43,6 @@ pub struct QobuzApiService {
 }
 
 impl QobuzApiService {
-    delegate!(pub fn search_catalog(query: &str, limit: Option<i32>, offset: Option<i32>) -> SearchResult = search_catalog);
-
-    delegate!(pub fn search_albums(query: &str, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Album>> = search_albums);
-
-    delegate!(pub fn search_artists(query: &str, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Artist>> = search_artists);
-
-    delegate!(pub fn search_tracks(query: &str, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Track>> = search_tracks);
-
-    delegate!(pub fn search_playlists(query: &str, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Playlist>> = search_playlists);
-
-    delegate!(pub fn get_album(album_id: &str, extra: Option<&str>) -> Album = get_album);
-
-    delegate!(pub fn get_artist(artist_id: i32, extra: Option<&str>) -> Artist = get_artist);
-
-    delegate!(pub fn get_track(track_id: i32) -> Track = get_track);
-
-    delegate!(pub fn get_playlist(playlist_id: &str, extra: Option<&str>) -> Playlist = get_playlist);
-
-    delegate!(pub fn get_release_list(artist_id: i32, limit: Option<i32>, offset: Option<i32>) -> ItemSearchResult<Box<Album>> = get_release_list);
-
-    delegate!(pub fn add_user_favorites(item_ids: &[i32], item_type: &str) -> () = add_user_favorites);
-
-    delegate!(pub fn delete_user_favorites(item_ids: &[i32], item_type: &str) -> () = delete_user_favorites);
-
-    delegate!(pub fn get_user_favorites(item_type: &str, limit: Option<i32>, offset: Option<i32>) -> UserFavorites = get_user_favorites);
-
-    delegate!(pub fn get_user_favorite_ids() -> UserFavorites = get_user_favorite_ids);
-
     /// Builds a service with the given credentials and a new HTTP client.
     ///
     /// # Arguments

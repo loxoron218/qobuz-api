@@ -2,7 +2,8 @@
 
 /// Delegates to an async function via a blocking Tokio runtime.
 macro_rules! delegate {
-    ($vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path) => {
+    ($(#[$meta:meta])* $vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path) => {
+        $(#[$meta])*
         #[doc = concat!("Delegates to [`", stringify!($path), "`].")]
         #[doc = ""]
         #[doc = "# Errors"]
@@ -44,23 +45,24 @@ macro_rules! retry_body {
 
 /// Delegates to an async function with automatic credential refresh on signature errors.
 macro_rules! delegate_with_retry {
-    ($vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path) => {
+    ($(#[$meta:meta])* $vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path) => {
         delegate_with_retry!(
-            @inner $vis fn $name -> $ret = $path,
+            @inner $(#[$meta])* $vis fn $name -> $ret = $path,
             fn_args: ($(, $arg: $ty)*),
             first: ($($arg),*),
             retry: ($($arg),*)
         );
     };
-    ($vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path, cancel: $cancel_ty:ty) => {
+    ($(#[$meta:meta])* $vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path, cancel: $cancel_ty:ty) => {
         delegate_with_retry!(
-            @inner $vis fn $name -> $ret = $path,
+            @inner $(#[$meta])* $vis fn $name -> $ret = $path,
             fn_args: ($(, $arg: $ty)*, cancel: $cancel_ty),
             first: ($($arg),*, cancel.clone()),
             retry: ($($arg),*, cancel)
         );
     };
-    (@inner $vis:vis fn $name:ident -> $ret:ty = $path:path, fn_args: ($($fn_args:tt)*), first: ($($first:tt)*), retry: ($($retry:tt)*)) => {
+    (@inner $(#[$meta:meta])* $vis:vis fn $name:ident -> $ret:ty = $path:path, fn_args: ($($fn_args:tt)*), first: ($($first:tt)*), retry: ($($retry:tt)*)) => {
+        $(#[$meta])*
         #[doc = concat!("Delegates to [`", stringify!($path), "`] with auto-refresh on signature errors.")]
         #[doc = ""]
         #[doc = "# Errors"]
@@ -75,7 +77,7 @@ macro_rules! delegate_with_retry {
 
 /// Delegates to an async function with auto-refresh and a cancel parameter.
 macro_rules! delegate_with_retry_cancellable {
-    ($vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path, cancel: $cancel_ty:ty) => {
-        delegate_with_retry!($vis fn $name($($arg: $ty),*) -> $ret = $path, cancel: $cancel_ty);
+    ($(#[$meta:meta])* $vis:vis fn $name:ident($($arg:ident: $ty:ty),* $(,)?) -> $ret:ty = $path:path, cancel: $cancel_ty:ty) => {
+        delegate_with_retry!($(#[$meta])* $vis fn $name($($arg: $ty),*) -> $ret = $path, cancel: $cancel_ty);
     };
 }

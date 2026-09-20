@@ -120,24 +120,30 @@ impl ReqwestClient {
 }
 
 impl HttpClient for ReqwestClient {
+    /// Implements [`HttpClient::get`] via the pooled `reqwest` client.
+    ///
+    /// Encodes the query pairs with `query` and boxes the send future for `dyn` dispatch.
     fn get(
         &self,
         url: &str,
-        params: &[(&str, &str)],
+        query: &[(&str, &str)],
     ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
-        let fut = self.inner.get(url).query(params).send();
+        let fut = self.inner.get(url).query(query).send();
         Box::pin(async move {
             let resp = fut.await?;
             Ok(resp)
         })
     }
 
+    /// Implements [`HttpClient::post_form`] via the pooled `reqwest` client.
+    ///
+    /// Clones the form pairs into owned strings for `form` and boxes the send future.
     fn post_form(
         &self,
         url: &str,
-        params: &[(&str, &str)],
+        form: &[(&str, &str)],
     ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
-        let params: Vec<(String, String)> = params
+        let params: Vec<(String, String)> = form
             .iter()
             .map(|(k, v)| ((*k).to_string(), (*v).to_string()))
             .collect();
@@ -149,13 +155,16 @@ impl HttpClient for ReqwestClient {
         })
     }
 
+    /// Implements [`HttpClient::get_with_auth`] via the pooled `reqwest` client.
+    ///
+    /// Attaches `X-User-Auth-Token` and an optional `Range` header to the request.
     fn get_with_auth(
         &self,
         url: &str,
-        token: &str,
+        auth_token: &str,
         range: Option<&str>,
     ) -> Pin<Box<dyn Future<Output = Result<Response, QobuzApiError>> + Send + '_>> {
-        let mut req = self.inner.get(url).header("X-User-Auth-Token", token);
+        let mut req = self.inner.get(url).header("X-User-Auth-Token", auth_token);
 
         if let Some(r) = range {
             req = req.header("Range", r);

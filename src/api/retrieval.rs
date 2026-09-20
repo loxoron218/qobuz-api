@@ -23,24 +23,91 @@ use crate::{
 };
 
 impl QobuzApiService {
-    delegate_with_retry!(pub fn get_track_file_url(track_id: i32, format_id: i32) -> FileUrl = get_track_file_url);
+    delegate_with_retry!(
+        /// Gets the download URL for a track at the specified quality.
+        ///
+        /// # Arguments
+        ///
+        /// * `track_id` - Track identifier
+        /// * `format_id` - Quality format ID (5=MP3, 6=FLAC 16-bit, 7=FLAC 24-bit/96kHz, 27=FLAC
+        ///   24-bit/192kHz)
+        ///
+        /// # Returns
+        ///
+        /// The download URL and metadata for the track.
+        pub fn get_track_file_url(track_id: i32, format_id: i32) -> FileUrl = get_track_file_url
+    );
 
     delegate_with_retry_cancellable!(
+        /// Downloads a single track with cancellation support.
+        ///
+        /// # Arguments
+        ///
+        /// * `track_id` - Track identifier
+        /// * `format_id` - Quality format ID
+        /// * `output_dir` - Directory to save the downloaded file
+        /// * `config` - Optional metadata configuration for tagging
+        /// * `cancel` - Optional cancellation flag checked during the download
+        ///
+        /// # Returns
+        ///
+        /// The path to the downloaded file.
         pub fn download_track_cancellable(track_id: i32, format_id: i32, output_dir: &Path, config: Option<&MetadataConfig>) -> PathBuf = download_track,
         cancel: Option<&AtomicBool>
     );
 
     delegate_with_retry_cancellable!(
+        /// Downloads all tracks in an album with cancellation support.
+        ///
+        /// # Arguments
+        ///
+        /// * `album_id` - Album identifier
+        /// * `format_id` - Quality format ID
+        /// * `output_dir` - Base output directory for downloaded files
+        /// * `config` - Optional metadata configuration for tagging
+        /// * `concurrency` - Maximum number of concurrent downloads
+        /// * `cancel` - Optional cancellation flag
+        ///
+        /// # Returns
+        ///
+        /// A vector of paths to the downloaded track files.
         pub fn download_album_cancellable(album_id: &str, format_id: i32, output_dir: &Path, config: Option<&MetadataConfig>, concurrency: Option<usize>) -> Vec<PathBuf> = download_album,
         cancel: Option<Arc<AtomicBool>>
     );
 
     delegate_with_retry_cancellable!(
+        /// Downloads all albums by an artist with cancellation support.
+        ///
+        /// # Arguments
+        ///
+        /// * `artist_id` - Artist identifier
+        /// * `format_id` - Quality format ID
+        /// * `output_dir` - Base output directory (subdirectories created per album)
+        /// * `config` - Optional metadata configuration for tagging
+        /// * `concurrency` - Maximum number of concurrent track downloads per album
+        /// * `cancel` - Optional cancellation flag
+        ///
+        /// # Returns
+        ///
+        /// A vector of paths to all downloaded track files.
         pub fn download_artist_cancellable(artist_id: i32, format_id: i32, output_dir: &Path, config: Option<&MetadataConfig>, concurrency: Option<usize>) -> Vec<PathBuf> = download_artist,
         cancel: Option<Arc<AtomicBool>>
     );
 
     delegate_with_retry_cancellable!(
+        /// Downloads all tracks in a playlist with cancellation support.
+        ///
+        /// # Arguments
+        ///
+        /// * `playlist_id` - Playlist identifier
+        /// * `format_id` - Quality format ID
+        /// * `output_dir` - Base output directory (playlist name subdirectory is created)
+        /// * `config` - Optional metadata configuration for tagging
+        /// * `cancel` - Optional cancellation flag
+        ///
+        /// # Returns
+        ///
+        /// A vector of paths to all downloaded track files.
         pub fn download_playlist_cancellable(playlist_id: &str, format_id: i32, output_dir: &Path, config: Option<&MetadataConfig>) -> Vec<PathBuf> = download_playlist,
         cancel: Option<Arc<AtomicBool>>
     );
