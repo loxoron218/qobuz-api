@@ -9,7 +9,7 @@ version = "2.0.0"
 [dependencies]
 anyhow = { version = "1.0.104", default-features = false }
 base64 = { version = "0.23.1", default-features = false, features = ["std"] }
-lofty = { version = "0.25.1", default-features = false, features = [
+lofty = { version = "0.25.4", default-features = false, features = [
     "id3v2_compression_support",
 ] }
 md-5 = { version = "0.11.0", default-features = false }
