@@ -129,7 +129,7 @@ pub fn extract_comprehensive_metadata(
 
     let album_artists: Vec<AlbumArtistBrief> = album
         .and_then(|a| a.artists.as_ref())
-        .map(|artists| {
+        .map_or_default(|artists| {
             artists
                 .iter()
                 .map(|a| AlbumArtistBrief {
@@ -137,8 +137,7 @@ pub fn extract_comprehensive_metadata(
                     roles: a.roles.clone(),
                 })
                 .collect()
-        })
-        .unwrap_or_default();
+        });
 
     ComprehensiveMetadata {
         title: track.title.clone(),

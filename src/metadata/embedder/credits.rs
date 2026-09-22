@@ -215,8 +215,7 @@ fn build_flac_composers(meta: &ComprehensiveMetadata) -> Vec<String> {
     let from_performers = meta
         .performers
         .as_ref()
-        .map(|p| extract_composers_from_performers(p))
-        .unwrap_or_default();
+        .map_or_default(|p| extract_composers_from_performers(p));
     if let Some(last) = from_performers.last()
         && last != "Various Composers"
     {
