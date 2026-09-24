@@ -1,13 +1,12 @@
 # CODING STANDARDS
 
-This document describes the coding style used in this project. It consolidates the rules from
-[`AGENTS.md`](./AGENTS.md) with the conventions observed across the actual codebase. Formatting and
-linting rules are enforced by the following files:
+This document describes the coding style used in this project. Formatting and linting rules are
+enforced by the following files:
 
 - [`rustfmt.toml`](./rustfmt.toml)
 - [`clippy.toml`](./clippy.toml)
-- the `[lints.rust]` and `[lints.clippy]` tables in [`Cargo.toml`](./Cargo.toml) — notably
-  `pedantic` and `nursery` groups are denied.
+- the `[lints.cargo]`, `[lints.clippy]` and`[lints.rust]` tables in [`Cargo.toml`](./Cargo.toml) —
+  notably `pedantic` and `nursery` groups are denied.
 
 The core priorities are:
 
@@ -43,14 +42,17 @@ src/
 
 ### Module naming (global stem uniqueness)
 
-Every word of a module file name is a stem, and all stems must be unique codebase-wide across
-`src/`, `tests/`, and `benches/`. Singular and plural count as the same stem (`album` ≡ `albums`). A
-stem may not appear at **any word position** of any module name — neither as a leading word, a
-trailing word, nor in between. Consequently, no two modules may share a word in any position
-(`track_row` + `track_transition`, `album_card` + `album_playback`, `queue_persistence` +
-`settings_persistence`, or `playback::queue` + `ui::player::queue` are all forbidden). Stems are
-derived exclusively from `.rs` file names (parent indexes included); grouping directories without a
-parent index (e.g. `tests/verification/`) contribute no stems.
+Every module file name is a stem, and all stems must be unique codebase-wide across `src/`,
+`tests/`, and `benches/`. The stem is the full `.rs` basename, lowercased, with `-` and `_` treated
+as the same separator and singular and plural folded per word (`album` ≡ `albums`, `track-row` ≡
+`track_row`, `module` ≡ `modules`). Distinct names may share words freely (`track_row` +
+`track_transition`, `queue` + `queue_manager`), but identical stems may not (`playback::queue` +
+`ui::player::queue`, or `collect.rs` in two directories, are forbidden). No file names are exempt
+(`main.rs`, `lib.rs`, `mod.rs`, and `build.rs` count like everything else). Stems are derived
+exclusively from `.rs` file names (parent indexes included); grouping directories without a parent
+index (e.g. `tests/verification/`) contribute no stems. When two modules need the same name, first
+try a precise, non-vague synonym; fall back to a capability-prefixed compound (`alias_collect.rs` vs
+`group_collect.rs`) when only vague synonyms are available.
 
 ### Parent-index modules
 
@@ -73,9 +75,8 @@ pub mod database;
 
 ### Files
 
-- **ONLY** write `.rs` files. Never use `.ui`, `.xml`, or `.blp` files.
-- Keep each `.rs` file at **400 lines or fewer**. When a module outgrows the limit, split it into a
-  subdirectory with a parent index.
+- Keep each `.rs` file at **400 lines or fewer**. When a module outgrows the limit, split it into
+  smaller modules.
 - Keep module nesting shallow. The maximum sub-folder depth in the codebase is **2** (e.g.
   `src/ui/gallery/`).
 
@@ -86,6 +87,7 @@ pub mod database;
 ### Commands
 
 ```bash
+cargo collate # project hygiene checks (must pass before committing)
 cargo clippy --fix --allow-dirty --all-targets --all-features && cargo fmt
 cargo test    # all tests must pass before committing
 cargo bench   # benchmarks
@@ -105,11 +107,12 @@ cargo bench   # benchmarks
 
 ## 3. Imports
 
-Imports are grouped into three blocks separated by blank lines, in this order:
+Imports are grouped into four blocks separated by blank lines, in this order:
 
 1. `std::` items
 2. external crates
-3. `crate::` internal items
+3. the own crate by package name (only in `tests/` and `benches/`)
+4. `crate::` internal items
 
 One item per import line (`imports_granularity = "One"`). Multiple external crates are imported in a
 single `use { ... }` block. Prefer `crate::`-relative imports and nested re-imports.
@@ -250,7 +253,6 @@ strings when fields are appropriate.
 ```rust
 info!(item_id, "Advancing to next item",);
 
-// errors carry the source as a field
 warn!(
     error = %e,
     path = %config_path.display(),

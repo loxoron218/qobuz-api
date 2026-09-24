@@ -1,8 +1,8 @@
+# check-private-items = true
 absolute-paths-max-segments = 1
 allow-expect-in-consts = false
 allow-mixed-uninlined-format-args = false
 allow-unwrap-in-consts = false
-check-private-items = true
 excessive-nesting-threshold = 3
 module-items-ordered-within-groupings = ["PascalCase"]
 source-item-ordering = ["module"]
