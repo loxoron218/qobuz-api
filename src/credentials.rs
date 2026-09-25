@@ -4,16 +4,16 @@
 
 pub mod web;
 
-#[cfg(unix)]
-use std::{
-    fs::{Permissions, set_permissions},
-    os::unix::fs::PermissionsExt,
-};
-
 use std::{
     fs::{read_to_string, write},
     io::Error,
     path::Path,
+};
+
+#[cfg(unix)]
+use std::{
+    fs::{Permissions, set_permissions},
+    os::unix::fs::PermissionsExt,
 };
 
 use serde::{Deserialize, Serialize};

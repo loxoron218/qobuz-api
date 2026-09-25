@@ -2,6 +2,7 @@
 
 #[macro_use]
 mod macros;
+
 pub mod auth;
 pub mod content;
 pub mod favorites;

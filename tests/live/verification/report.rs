@@ -7,7 +7,9 @@ use std::{
     path::Path,
 };
 
-use {anyhow::Result, qobuz_api::sanitize::sanitize_filename, tracing::info};
+use {anyhow::Result, tracing::info};
+
+use qobuz_api::sanitize::sanitize_filename;
 
 use crate::verification::{
     DIRECTORY_FILENAME_IGNORED, DURATION_IGNORED, FILE_DATE_TIME_IGNORED, FILE_SIZE_IGNORED,

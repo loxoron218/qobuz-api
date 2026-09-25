@@ -1,7 +1,7 @@
 //! Binary entrypoint for the Qobuz API client.
 
 use {
-    anyhow::{Result, anyhow},
+    anyhow::{Context, Error, Result},
     tokio::main,
     tracing_subscriber::{EnvFilter, fmt},
 };
@@ -12,7 +12,8 @@ async fn main() -> Result<()> {
     fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .try_init()
-        .map_err(|e| anyhow!(e))?;
+        .map_err(|error| Error::msg(error.to_string()))
+        .context("Failed to initialize tracing subscriber")?;
 
     Ok(())
 }
