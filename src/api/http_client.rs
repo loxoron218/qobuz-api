@@ -95,7 +95,10 @@ impl ReqwestClient {
                 .insert(HeaderName::from_static("x-app-id"), val)
                 .is_some()
         {
-            warn!("fresh header map already contained x-app-id");
+            warn!(
+                header = "x-app-id",
+                "Fresh header map already contained header"
+            );
         }
 
         let inner = Client::builder()

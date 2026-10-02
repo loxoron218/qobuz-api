@@ -89,7 +89,7 @@ impl QobuzApiService {
         let (app_id, app_secret) = if let Some(creds) = load_app_credentials(env_path)? {
             creds
         } else {
-            info!("No .env credentials found, extracting from web player");
+            info!(path = %env_path.display(), "No .env credentials found, extracting from web player");
 
             let rt = Runtime::new()?;
             let (id, secret) = rt.block_on(extract_from_web_player())?;

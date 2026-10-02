@@ -26,7 +26,7 @@ mod tests {
     }
 
     fn log_albums(label: &str, items: &[Box<Album>]) {
-        info!("{} ({} results)", label, items.len());
+        info!(label, count = items.len(), "Search completed");
         for (i, a) in items.iter().take(5).enumerate() {
             let artist = a
                 .artist
@@ -34,30 +34,31 @@ mod tests {
                 .and_then(|a| a.name.as_deref())
                 .unwrap_or("?");
             info!(
-                "  {}. {} — {}",
-                i.saturating_add(1),
-                a.title.as_deref().unwrap_or("?"),
-                artist
+                index = i.saturating_add(1),
+                title = a.title.as_deref().unwrap_or("?"),
+                artist,
+                "Search result"
             );
         }
     }
 
     fn log_artists(label: &str, items: &[Box<Artist>]) {
-        info!("{} ({} results)", label, items.len());
+        info!(label, count = items.len(), "Search completed");
         for (i, a) in items.iter().take(5).enumerate() {
             let albums = a
                 .albums_count
                 .map_or_else(|| "?".to_string(), |c| c.to_string());
             info!(
-                "  {}. {} ({albums} albums)",
-                i.saturating_add(1),
-                a.name.as_deref().unwrap_or("?")
+                index = i.saturating_add(1),
+                name = a.name.as_deref().unwrap_or("?"),
+                albums,
+                "Search result"
             );
         }
     }
 
     fn log_tracks(label: &str, items: &[Box<Track>]) {
-        info!("{} ({} results)", label, items.len());
+        info!(label, count = items.len(), "Search completed");
         for (i, t) in items.iter().take(5).enumerate() {
             let album = t
                 .album
@@ -70,24 +71,26 @@ mod tests {
                 .and_then(|p| p.name.as_deref())
                 .unwrap_or("?");
             info!(
-                "  {}. {} — {} [{album}]",
-                i.saturating_add(1),
-                t.title.as_deref().unwrap_or("?"),
-                artist
+                index = i.saturating_add(1),
+                title = t.title.as_deref().unwrap_or("?"),
+                artist,
+                album,
+                "Search result"
             );
         }
     }
 
     fn log_playlists(label: &str, items: &[Box<Playlist>]) {
-        info!("{} ({} results)", label, items.len());
+        info!(label, count = items.len(), "Search completed");
         for (i, p) in items.iter().take(5).enumerate() {
             let count = p
                 .tracks_count
                 .map_or_else(|| "?".to_string(), |c| c.to_string());
             info!(
-                "  {}. {} ({count} tracks)",
-                i.saturating_add(1),
-                p.name.as_deref().unwrap_or("?")
+                index = i.saturating_add(1),
+                name = p.name.as_deref().unwrap_or("?"),
+                count,
+                "Search result"
             );
         }
     }
@@ -337,7 +340,7 @@ mod tests {
                 .collect::<Vec<_>>()
         );
 
-        info!("\n  Catalog search for '{}':", kw.catalog_query);
+        info!(query = %kw.catalog_query, "Catalog search completed");
         log_albums("Albums", &albums);
         log_artists("Artists", &artists);
         log_tracks("Tracks", &tracks);

@@ -88,7 +88,7 @@ mod tests {
             .as_deref()
             .ok_or_else(|| anyhow!("album missing ID"))?;
 
-        info!("Browsing album ID: {album_id}");
+        info!(album_id, "Browsing album");
 
         let album: Album = service.get_album(album_id, None)?;
 
@@ -99,11 +99,9 @@ mod tests {
         ensure!(album.id.is_some(), "get_album should return an ID");
 
         info!(
-            "Album: {} (tracks: {})",
-            album.title.as_deref().unwrap_or("?"),
-            album
-                .tracks_count
-                .map_or_else(|| "?".to_string(), |c| c.to_string())
+            title = album.title.as_deref().unwrap_or("?"),
+            tracks_count = ?album.tracks_count,
+            "Got album"
         );
         Ok(())
     }
@@ -130,10 +128,10 @@ mod tests {
         );
 
         info!(
-            "Album '{}' has {} tracks: {:?}",
-            album.title.as_deref().unwrap_or("?"),
-            track_ids.len(),
-            track_ids.iter().take(5).collect::<Vec<_>>()
+            title = album.title.as_deref().unwrap_or("?"),
+            count = track_ids.len(),
+            preview = ?track_ids.iter().take(5).collect::<Vec<_>>(),
+            "Got album track IDs"
         );
         Ok(())
     }
@@ -146,7 +144,7 @@ mod tests {
         let artist = get_artist_by_query(&service, &ids.artist, None)?;
         let artist_id = artist.id.ok_or_else(|| anyhow!("artist missing ID"))?;
 
-        info!("Browsing artist ID: {artist_id}");
+        info!(artist_id, "Browsing artist");
 
         let artist: Artist = service.get_artist(artist_id, None)?;
 
@@ -156,11 +154,9 @@ mod tests {
         );
 
         info!(
-            "Artist: {} (albums: {})",
-            artist.name.as_deref().unwrap_or("?"),
-            artist
-                .albums_count
-                .map_or_else(|| "?".to_string(), |c| c.to_string())
+            name = artist.name.as_deref().unwrap_or("?"),
+            albums_count = ?artist.albums_count,
+            "Got artist"
         );
         Ok(())
     }
@@ -181,7 +177,7 @@ mod tests {
 
         let track_id = first.id.ok_or_else(|| anyhow!("track missing ID"))?;
 
-        info!("Browsing track ID: {track_id}");
+        info!(track_id, "Browsing track");
 
         let track: Track = service.get_track(track_id)?;
 
@@ -192,16 +188,14 @@ mod tests {
         ensure!(track.duration.is_some(), "get_track should return duration");
 
         info!(
-            "Track: {} (duration: {}s, album: {})",
-            track.title.as_deref().unwrap_or("?"),
-            track
-                .duration
-                .map_or_else(|| "?".to_string(), |d| d.to_string()),
-            track
+            title = track.title.as_deref().unwrap_or("?"),
+            duration = ?track.duration,
+            album = track
                 .album
                 .as_ref()
                 .and_then(|a| a.title.as_deref())
-                .unwrap_or("?")
+                .unwrap_or("?"),
+            "Got track"
         );
         Ok(())
     }
@@ -245,8 +239,8 @@ mod tests {
             .unwrap_or("?");
 
         info!(
-            "Track: {} by {performer} from '{album_title}'",
-            track.title.as_deref().unwrap_or("?")
+            title = track.title.as_deref().unwrap_or("?"),
+            performer, album_title, "Got track metadata"
         );
         Ok(())
     }
@@ -271,7 +265,7 @@ mod tests {
             .as_deref()
             .ok_or_else(|| anyhow!("playlist missing ID"))?;
 
-        info!("Browsing playlist ID: {playlist_id}");
+        info!(playlist_id, "Browsing playlist");
 
         let playlist: Playlist = service.get_playlist(playlist_id, None)?;
 
@@ -281,11 +275,9 @@ mod tests {
         );
 
         info!(
-            "Playlist: {} (tracks: {})",
-            playlist.name.as_deref().unwrap_or("?"),
-            playlist
-                .tracks_count
-                .map_or_else(|| "?".to_string(), |c| c.to_string())
+            name = playlist.name.as_deref().unwrap_or("?"),
+            tracks_count = ?playlist.tracks_count,
+            "Got playlist"
         );
         Ok(())
     }
@@ -309,7 +301,7 @@ mod tests {
 
         let artist_id = first.id.ok_or_else(|| anyhow!("artist missing ID"))?;
 
-        info!("Getting release list for artist ID: {artist_id}");
+        info!(artist_id, "Getting release list");
 
         let releases = service.get_release_list(artist_id, Some(5), None)?;
         let release_items = releases
@@ -326,12 +318,12 @@ mod tests {
             "At least one release should have a title"
         );
 
-        info!("Release list ({} albums):", release_items.len());
+        info!(count = release_items.len(), "Got release list");
         for (i, album) in release_items.iter().take(5).enumerate() {
             info!(
-                "  {}. {}",
-                i.saturating_add(1),
-                album.title.as_deref().unwrap_or("?")
+                index = i.saturating_add(1),
+                title = album.title.as_deref().unwrap_or("?"),
+                "Release list entry"
             );
         }
         Ok(())

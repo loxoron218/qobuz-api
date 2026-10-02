@@ -44,7 +44,7 @@ use crate::{
 /// * `value` - Text value to store.
 pub fn push_text(tag: &mut Tag, key: ItemKey, value: String) {
     if !tag.push(TagItem::new(key, Text(value))) {
-        warn!("failed to push tag item");
+        warn!(key = ?key, "Failed to push tag item");
     }
 }
 
@@ -89,7 +89,7 @@ pub fn embed_metadata_in_file(
         let tag_type = tagged_file.primary_tag_type();
         let previous = tagged_file.insert_tag(Tag::new(tag_type));
         if previous.is_some() {
-            warn!("newly probed file already had a primary tag");
+            warn!(path = %path.display(), "Newly probed file already had a primary tag");
         }
         tagged_file
             .primary_tag_mut()

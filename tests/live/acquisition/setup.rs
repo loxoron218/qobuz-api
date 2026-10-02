@@ -44,8 +44,9 @@ pub fn setup_album_download() -> Result<AlbumDownloadSetup> {
     let temp_dir = TempDir::new()?;
 
     info!(
-        "Downloading album {album_id} to {}",
-        temp_dir.path().display()
+        album_id,
+        path = %temp_dir.path().display(),
+        "Downloading album"
     );
 
     Ok(AlbumDownloadSetup {

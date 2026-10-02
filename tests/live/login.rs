@@ -99,7 +99,8 @@ mod tests {
         })?;
         ensure!(!token.is_empty(), "Auth token should not be empty");
 
-        info!("email/password login succeeded against live API");
+        info!(method = "email_password", "Email password login succeeded");
+
         Ok(())
     }
 
@@ -122,7 +123,10 @@ mod tests {
             "Wrong credentials should return ApiErrorResponse or AuthenticationError, got: {err:?}"
         );
 
-        info!("wrong credentials correctly rejected by live API");
+        info!(
+            method = "email_password",
+            "Wrong credentials correctly rejected"
+        );
         Ok(())
     }
 
@@ -147,7 +151,7 @@ mod tests {
         })?;
         ensure!(!stored_token.is_empty(), "Auth token should not be empty");
 
-        info!("token login succeeded against live API");
+        info!(method = "token", "Token login succeeded");
         Ok(())
     }
 
@@ -163,7 +167,7 @@ mod tests {
         })?;
         ensure!(!token.is_empty(), "Auth token should not be empty");
 
-        info!("env-based authentication succeeded against live API");
+        info!(method = "env", "Env authentication succeeded");
         Ok(())
     }
 
@@ -177,7 +181,10 @@ mod tests {
         let token = service.require_auth_token()?;
         ensure!(!token.is_empty(), "Auth token should not be empty");
 
-        info!("full service::new() + authenticate_with_env() succeeded against live API");
+        info!(
+            method = "env",
+            "Service creation and env authentication succeeded"
+        );
         Ok(())
     }
 }

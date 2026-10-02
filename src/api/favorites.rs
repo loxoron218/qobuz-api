@@ -63,10 +63,18 @@ async fn modify_favorites(
     )
     .await?;
     if !response.is_object() {
-        warn!("favorites modify endpoint returned non-object response");
+        warn!(
+            endpoint,
+            item_type, "Favorites modify endpoint returned non-object response"
+        );
     }
 
-    info!(item_type, count = item_ids.len(), "{log_action}");
+    info!(
+        item_type,
+        count = item_ids.len(),
+        action = log_action,
+        "Favorites modified"
+    );
     Ok(())
 }
 

@@ -26,11 +26,8 @@ macro_rules! retry_body {
                     if message.contains("Invalid Request Signature") =>
                 {
                     info!(
-                        concat!(
-                            "Signature invalid for ",
-                            stringify!($path),
-                            ", refreshing credentials"
-                        )
+                        path = stringify!($path),
+                        "Signature invalid, refreshing credentials"
                     );
 
                     $crate::api::auth::refresh_app_credentials($self)?;

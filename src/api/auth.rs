@@ -112,7 +112,10 @@ where
     E: Fn(&str) -> Result<String, VarError>,
 {
     if let (Ok(user_id), Ok(token)) = (get_env("QOBUZ_USER_ID"), get_env("QOBUZ_USER_AUTH_TOKEN")) {
-        info!("Using token-based authentication from environment");
+        info!(
+            method = "token",
+            "Using token-based authentication from environment"
+        );
 
         let rt = Runtime::new()?;
         rt.block_on(login_with_token_inner(
@@ -141,7 +144,10 @@ where
         message: format!("QOBUZ_PASSWORD environment variable not found: {var_error}"),
     })?;
 
-    info!("Using email/password authentication from environment");
+    info!(
+        method = "email",
+        "Using email/password authentication from environment"
+    );
 
     let rt = Runtime::new()?;
     let token = rt.block_on(login_inner(
@@ -189,7 +195,7 @@ pub fn login(
     ))?;
 
     service.set_auth_token(token);
-    info!("Login successful");
+    info!(email, "Login successful");
     Ok(())
 }
 
@@ -264,7 +270,7 @@ pub fn login_with_token(
     ))?;
 
     service.set_auth_token(auth_token.to_string());
-    info!("Token login successful");
+    info!(user_id, "Token login successful");
     Ok(())
 }
 
@@ -344,7 +350,10 @@ pub fn refresh_app_credentials(service: &mut QobuzApiService) -> Result<(), Qobu
         return Err(err);
     }
 
-    info!("Refreshing app credentials from web player");
+    info!(
+        source = "web_player",
+        "Refreshing app credentials from web player"
+    );
 
     let rt = Runtime::new()?;
     let (app_id, app_secret) = rt.block_on(extract_from_web_player()).map_err(|e| {
@@ -360,6 +369,9 @@ pub fn refresh_app_credentials(service: &mut QobuzApiService) -> Result<(), Qobu
     service.rebuild_http_client()?;
     service.mark_credentials_refreshed();
 
-    info!("App credentials refreshed successfully");
+    info!(
+        source = "web_player",
+        "App credentials refreshed successfully"
+    );
     Ok(())
 }

@@ -3,7 +3,7 @@
 #[cfg(test)]
 pub mod diagnostics;
 
-use std::io::Error as IoError;
+use std::io::Error;
 
 use {reqwest::Error as ReqwestError, thiserror::Error};
 
@@ -25,7 +25,7 @@ pub enum QobuzApiError {
 
     /// I/O failure (file system, permissions).
     #[error("I/O error: {0}")]
-    IoError(#[from] IoError),
+    IoError(#[from] Error),
 
     /// API returned an error response with code and message.
     #[error("API error {code}: {message}")]

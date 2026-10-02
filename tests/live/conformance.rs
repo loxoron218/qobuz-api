@@ -164,7 +164,10 @@ mod tests {
         let mp3_report = Path::new("metadata_tests/mp3_report.md");
 
         if !flac_report.exists() || !mp3_report.exists() {
-            info!("Reports not found - run live_download_all_tracks_and_compare first");
+            info!(
+                step = "verify_reports",
+                "Reports not found, run download and compare first"
+            );
             return Ok(());
         }
 
@@ -180,7 +183,7 @@ mod tests {
             "MP3 report should have correct header"
         );
 
-        info!("Reports verified successfully");
+        info!(step = "verify_reports", "Reports verified successfully");
         Ok(())
     }
 }

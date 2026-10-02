@@ -112,8 +112,9 @@ mod tests {
         let track_id = find_track_id(&service, &config.track_query)?;
 
         info!(
-            "Getting file URL for track {track_id} at format {}",
-            config.format_id
+            track_id,
+            format_id = config.format_id,
+            "Getting file URL for track"
         );
 
         let file_url: FileUrl = service.get_track_file_url(track_id, config.format_id)?;
@@ -133,14 +134,11 @@ mod tests {
         );
 
         info!(
-            "File URL: {}... (duration: {}s, format: {})",
-            url.chars().take(80).collect::<String>(),
-            file_url
-                .duration
-                .map_or_else(|| "?".to_string(), |d| format!("{d:.1}")),
-            file_url
-                .format_id
-                .map_or_else(|| "?".to_string(), |f| f.to_string())
+            track_id,
+            url_preview = url.chars().take(80).collect::<String>(),
+            duration = ?file_url.duration,
+            format_id = ?file_url.format_id,
+            "Got file URL"
         );
         Ok(())
     }
@@ -153,8 +151,9 @@ mod tests {
         let temp_dir = TempDir::new()?;
 
         info!(
-            "Downloading track {track_id} to {}",
-            temp_dir.path().display()
+            track_id,
+            path = %temp_dir.path().display(),
+            "Downloading track"
         );
 
         let path = service.download_track(track_id, config.format_id, temp_dir.path(), None)?;
@@ -177,9 +176,10 @@ mod tests {
         );
 
         info!(
-            "Downloaded: {} ({} bytes, ext: {ext})",
-            path.display(),
-            metadata.len()
+            path = %path.display(),
+            bytes = metadata.len(),
+            ext,
+            "Downloaded track"
         );
         Ok(())
     }
@@ -198,13 +198,13 @@ mod tests {
 
         if duration < TRIAL_DURATION_THRESHOLD_SECS {
             info!(
-                "WARNING: Track {track_id} returned a trial clip ({duration:.1}s). This indicates \
-                 the credentials may not have a valid subscription."
+                track_id,
+                duration, "Trial clip detected, credentials may lack subscription"
             );
         } else {
             info!(
-                "Track {track_id} returned full content ({duration:.1}s) — subscription \
-                 credentials are valid."
+                track_id,
+                duration, "Full content returned, subscription credentials valid"
             );
         }
 
@@ -221,7 +221,7 @@ mod tests {
         let track_id = find_track_id(&service, &get_download_config().track_query)?;
         let temp_dir = TempDir::new()?;
 
-        info!("Downloading track {track_id} as MP3 320kbps");
+        info!(track_id, format = "mp3_320", "Downloading track");
 
         let path = service.download_track(track_id, MP3_320, temp_dir.path(), None)?;
 
@@ -233,7 +233,11 @@ mod tests {
         let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
         ensure!(ext == "mp3", "extension should be mp3, got '{ext}'");
 
-        info!("MP3 download: {} bytes", metadata.len());
+        info!(
+            bytes = metadata.len(),
+            format = "mp3_320",
+            "MP3 download complete"
+        );
         Ok(())
     }
 
@@ -245,8 +249,9 @@ mod tests {
         let temp_dir = TempDir::new()?;
 
         info!(
-            "Downloading album {album_id} to {}",
-            temp_dir.path().display()
+            album_id,
+            path = %temp_dir.path().display(),
+            "Downloading album"
         );
 
         let paths =
@@ -267,14 +272,14 @@ mod tests {
             );
         }
 
-        info!("Album download complete: {} tracks saved", paths.len());
+        info!(count = paths.len(), "Album download complete");
         for (i, path) in paths.iter().enumerate() {
             let size = metadata(path).map_or(0, |m| m.len());
             info!(
-                "  {}. {} ({} bytes)",
-                i.saturating_add(1),
-                path.display(),
-                size
+                index = i.saturating_add(1),
+                path = %path.display(),
+                bytes = size,
+                "Album track saved"
             );
         }
         Ok(())
@@ -308,7 +313,7 @@ mod tests {
             "directory structure should be <temp_dir>/<artist>/<album>/"
         );
 
-        info!("Directory structure confirmed: {}/", parent.display());
+        info!(path = %parent.display(), "Directory structure confirmed");
         Ok(())
     }
 
