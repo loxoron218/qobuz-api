@@ -11,7 +11,11 @@ use crate::errors::QobuzApiError::{
 };
 
 /// Asserts that a type satisfies `Send + Sync + 'static` bounds.
-fn assert_send_sync_static<T: Send + Sync + 'static>() {}
+fn assert_send_sync_static<T>()
+where
+    T: Send + Sync + 'static,
+{
+}
 
 #[test]
 fn all_variants_satisfy_send_sync_static() {

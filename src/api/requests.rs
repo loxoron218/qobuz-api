@@ -23,13 +23,15 @@ macro_rules! signed_request {
         $vis:vis fn $name:ident($client:ident, $base_url:ident, $endpoint:ident, $params:ident, $auth:ident) -> $ret:ty $body:block
     ) => {
         $(#[$meta])*
-        $vis async fn $name<T: DeserializeOwned>(
+        $vis async fn $name<T>(
             $client: &dyn HttpClient,
             $base_url: &str,
             $endpoint: &str,
             $params: &mut Vec<(String, String)>,
             $auth: &RequestAuth<'_>,
-        ) -> $ret $body
+        ) -> $ret
+        where T: DeserializeOwned
+        $body
     };
 }
 
@@ -86,12 +88,15 @@ fn append_signature(
 /// # Errors
 ///
 /// Returns a `QobuzApiError` on HTTP failures or JSON parse errors.
-async fn execute_post<T: DeserializeOwned>(
+async fn execute_post<T>(
     client: &dyn HttpClient,
     base_url: &str,
     endpoint: &str,
     params: &[(String, String)],
-) -> Result<T, QobuzApiError> {
+) -> Result<T, QobuzApiError>
+where
+    T: DeserializeOwned,
+{
     let url = format!("{base_url}{endpoint}");
     let param_refs: Vec<(&str, &str)> = params
         .iter()
@@ -149,14 +154,17 @@ signed_request!(
 /// # Errors
 ///
 /// Returns a `QobuzApiError` on HTTP failures or JSON parse errors.
-pub async fn post<T: DeserializeOwned>(
+pub async fn post<T>(
     client: &dyn HttpClient,
     base_url: &str,
     endpoint: &str,
     params: &mut Vec<(String, String)>,
     app_id: &str,
     user_auth_token: &str,
-) -> Result<T, QobuzApiError> {
+) -> Result<T, QobuzApiError>
+where
+    T: DeserializeOwned,
+{
     params.push(("app_id".to_string(), app_id.to_string()));
     if !user_auth_token.is_empty() {
         params.push(("user_auth_token".to_string(), user_auth_token.to_string()));

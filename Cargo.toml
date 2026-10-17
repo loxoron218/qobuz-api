@@ -1,6 +1,8 @@
 [package]
+categories = ["multimedia::audio", "api-bindings"]
 description = "A Rust client library for the Qobuz music streaming API"
 edition = "2024"
+keywords = ["qobuz", "music", "streaming", "api", "audio"]
 license = "GPL-3.0-or-later"
 name = "qobuz-api"
 repository = "https://github.com/loxoron218/qobuz-api"
@@ -60,51 +62,11 @@ name = "live"
 path = "tests/live/live.rs"
 required-features = ["live-tests"]
 
-[lints.rust]
-ambiguous_negative_literals = "deny"
-closure_returning_async_block = "deny"
-dead_code_pub_in_binary = "deny"
-deprecated_in_future = "deny"
-deprecated_safe = { level = "deny", priority = -1 }
-deref_into_dyn_supertrait = "deny"
-ffi_unwind_calls = "deny"
-future_incompatible = { level = "deny", priority = -1 }
-impl_trait_redundant_captures = "deny"
-keyword_idents = { level = "deny", priority = -1 }
-let_underscore = { level = "deny", priority = -1 }
-linker_info = "deny"
-macro_use_extern_crate = "deny"
-meta_variable_misuse = "deny"
-missing_copy_implementations = "deny"
-missing_debug_implementations = "deny"
-missing_docs = "deny"
-non_ascii_idents = "deny"
-nonstandard_style = { level = "deny", priority = -1 }
-raw_borrows_via_references = "deny"
-redundant_imports = "deny"
-redundant_lifetimes = "deny"
-refining_impl_trait = { level = "deny", priority = -1 }
-rust_2018_compatibility = { level = "deny", priority = -1 }
-rust_2018_idioms = { level = "deny", priority = -1 }
-rust_2021_compatibility = { level = "deny", priority = -1 }
-rust_2024_compatibility = { level = "deny", priority = -1 }
-single_use_lifetimes = "deny"
-trivial_casts = "deny"
-trivial_numeric_casts = "deny"
-unit_bindings = "deny"
-unknown_or_malformed_diagnostic_attributes = { level = "deny", priority = -1 }
-unnameable_types = "deny"
-unreachable_pub = "deny"
-unsafe_code = "deny"
-unstable_features = "deny"
-unused = { level = "deny", priority = -1 }
-unused_crate_dependencies = "deny"
-unused_import_braces = "deny"
-unused_lifetimes = "deny"
-unused_qualifications = "deny"
-unused_results = "deny"
-variant_size_differences = "deny"
-warnings = { level = "deny", priority = -1 }
+[lints.cargo]
+manual_readme = "allow"
+non_kebab_case_features = "deny"
+non_kebab_case_packages = "deny"
+pedantic = { level = "deny", priority = -1 }
 
 [lints.clippy]
 # unused_trait_names = "deny"
@@ -118,6 +80,7 @@ as_underscore = "deny"
 assertions_on_result_states = "deny"
 await_holding_lock = "deny"
 await_holding_refcell_ref = "deny"
+cargo = { level = "deny", priority = -1 }
 cast_possible_truncation = "deny"
 cast_possible_wrap = "deny"
 cast_precision_loss = "deny"
@@ -141,6 +104,8 @@ if_let_mutex = "deny"
 if_then_some_else_none = "deny"
 indexing_slicing = "deny"
 infallible_try_from = "deny"
+inline_modules = "deny"
+inline_trait_bounds = "deny"
 invalid_upcast_comparisons = "deny"
 iter_not_returning_iterator = "deny"
 large_futures = "deny"
@@ -191,3 +156,49 @@ unreachable = "deny"
 unused_result_ok = "deny"
 unwrap_in_result = "deny"
 unwrap_used = "deny"
+
+[lints.rust]
+ambiguous_negative_literals = "deny"
+closure_returning_async_block = "deny"
+dead_code_pub_in_binary = "deny"
+deprecated_in_future = "deny"
+deprecated_safe = { level = "deny", priority = -1 }
+deref_into_dyn_supertrait = "deny"
+ffi_unwind_calls = "deny"
+future_incompatible = { level = "deny", priority = -1 }
+impl_trait_redundant_captures = "deny"
+keyword_idents = { level = "deny", priority = -1 }
+let_underscore = { level = "deny", priority = -1 }
+linker_info = "deny"
+macro_use_extern_crate = "deny"
+meta_variable_misuse = "deny"
+missing_copy_implementations = "deny"
+missing_debug_implementations = "deny"
+missing_docs = "deny"
+non_ascii_idents = "deny"
+nonstandard_style = { level = "deny", priority = -1 }
+raw_borrows_via_references = "deny"
+redundant_imports = "deny"
+redundant_lifetimes = "deny"
+refining_impl_trait = { level = "deny", priority = -1 }
+rust_2018_compatibility = { level = "deny", priority = -1 }
+rust_2018_idioms = { level = "deny", priority = -1 }
+rust_2021_compatibility = { level = "deny", priority = -1 }
+rust_2024_compatibility = { level = "deny", priority = -1 }
+single_use_lifetimes = "deny"
+trivial_casts = "deny"
+trivial_numeric_casts = "deny"
+unit_bindings = "deny"
+unknown_or_malformed_diagnostic_attributes = { level = "deny", priority = -1 }
+unnameable_types = "deny"
+unreachable_pub = "deny"
+unsafe_code = "deny"
+unstable_features = "deny"
+unused = { level = "deny", priority = -1 }
+unused_crate_dependencies = "deny"
+unused_import_braces = "deny"
+unused_lifetimes = "deny"
+unused_qualifications = "deny"
+unused_results = "deny"
+variant_size_differences = "deny"
+warnings = { level = "deny", priority = -1 }

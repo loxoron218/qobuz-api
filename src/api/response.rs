@@ -26,10 +26,10 @@ use crate::errors::QobuzApiError::{
 /// # Errors
 ///
 /// Returns a `QobuzApiError` on non-success status codes or JSON deserialization failure.
-pub async fn parse_response<T: DeserializeOwned>(
-    response: Response,
-    endpoint: &str,
-) -> Result<T, QobuzApiError> {
+pub async fn parse_response<T>(response: Response, endpoint: &str) -> Result<T, QobuzApiError>
+where
+    T: DeserializeOwned,
+{
     let status = response.status();
     let body = response.text().await?;
 

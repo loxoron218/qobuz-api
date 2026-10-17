@@ -15,7 +15,7 @@ use {
 
 use qobuz_api::{
     api::{
-        content::{records::Track, stream::quality::MP3_320},
+        content::{quality::MP3_320, records::Track},
         service_state::QobuzApiService,
     },
     metadata::{

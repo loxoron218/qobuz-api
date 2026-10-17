@@ -92,7 +92,11 @@ mod tests {
 
     #[test]
     fn stub_client_implements_transport() {
-        fn assert_impl<T: HttpClient>() {}
+        fn assert_impl<T>()
+        where
+            T: HttpClient,
+        {
+        }
         assert_impl::<StubHttpClient>();
     }
 }

@@ -9,6 +9,7 @@ pub mod discography;
 pub mod mixtape;
 pub mod persistence;
 pub mod playlists;
+pub mod quality;
 pub mod record_media;
 pub mod records;
 pub mod stream;
@@ -109,11 +110,14 @@ pub fn push_pagination_params(
 /// # Errors
 ///
 /// Returns a `QobuzApiError` if not authenticated or the signed request fails.
-async fn do_signed_get<T: DeserializeOwned>(
+async fn do_signed_get<T>(
     service: &QobuzApiService,
     endpoint: &str,
     params: &mut Vec<(String, String)>,
-) -> Result<T, QobuzApiError> {
+) -> Result<T, QobuzApiError>
+where
+    T: DeserializeOwned,
+{
     let token = service.require_auth_token()?;
 
     signed_get(
@@ -147,13 +151,16 @@ async fn do_signed_get<T: DeserializeOwned>(
 /// # Errors
 ///
 /// Returns a `QobuzApiError` if not authenticated or the API request fails.
-pub async fn search<T: DeserializeOwned>(
+pub async fn search<T>(
     service: &QobuzApiService,
     endpoint: &str,
     query: &str,
     limit: Option<i32>,
     offset: Option<i32>,
-) -> Result<T, QobuzApiError> {
+) -> Result<T, QobuzApiError>
+where
+    T: DeserializeOwned,
+{
     let mut params = vec![("query".to_string(), query.to_string())];
     push_pagination_params(&mut params, limit, offset);
 
@@ -177,13 +184,17 @@ pub async fn search<T: DeserializeOwned>(
 /// # Errors
 ///
 /// Returns a `QobuzApiError` if not authenticated or the API request fails.
-pub async fn get_by_id<T: DeserializeOwned, I: ToString>(
+pub async fn get_by_id<T, I>(
     service: &QobuzApiService,
     endpoint: &str,
     id_field: &str,
     id: I,
     extra: Option<&str>,
-) -> Result<T, QobuzApiError> {
+) -> Result<T, QobuzApiError>
+where
+    T: DeserializeOwned,
+    I: ToString,
+{
     let mut params = vec![(id_field.to_string(), id.to_string())];
     if let Some(e) = extra {
         params.push(("extra".to_string(), e.to_string()));
@@ -210,14 +221,18 @@ pub async fn get_by_id<T: DeserializeOwned, I: ToString>(
 /// # Errors
 ///
 /// Returns a `QobuzApiError` if not authenticated or the API request fails.
-pub async fn paginated<T: DeserializeOwned, I: ToString>(
+pub async fn paginated<T, I>(
     service: &QobuzApiService,
     endpoint: &str,
     id_field: &str,
     id: I,
     limit: Option<i32>,
     offset: Option<i32>,
-) -> Result<T, QobuzApiError> {
+) -> Result<T, QobuzApiError>
+where
+    T: DeserializeOwned,
+    I: ToString,
+{
     let mut params = vec![(id_field.to_string(), id.to_string())];
     push_pagination_params(&mut params, limit, offset);
 

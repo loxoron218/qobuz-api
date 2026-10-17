@@ -38,10 +38,13 @@ pub fn parse_performers(performers_str: &str) -> Vec<(&str, Vec<&str>)> {
 ///
 /// A vector of artist name strings matching performance roles.
 #[must_use]
-pub fn extract_artist_names_from_performers<S: BuildHasher>(
+pub fn extract_artist_names_from_performers<S>(
     performers_str: &str,
     existing: &HashSet<String, S>,
-) -> Vec<String> {
+) -> Vec<String>
+where
+    S: BuildHasher,
+{
     let mut names = Vec::new();
     for (person_name, roles) in parse_performers(performers_str) {
         let has_role = roles.iter().any(|role| {
@@ -129,7 +132,10 @@ pub fn normalize_composer_name(name: &str) -> String {
 ///
 /// `true` if the name matches an existing entry after normalization.
 #[must_use]
-pub fn is_duplicate_composer<S: BuildHasher>(name: &str, existing: &HashSet<String, S>) -> bool {
+pub fn is_duplicate_composer<S>(name: &str, existing: &HashSet<String, S>) -> bool
+where
+    S: BuildHasher,
+{
     let normalized = normalize_composer_name(name);
     if existing.contains(&normalized) {
         return true;

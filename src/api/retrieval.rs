@@ -240,7 +240,7 @@ mod tests {
     };
 
     use crate::api::{
-        content::stream::quality::{FLAC_16_44, FLAC_24_96, MP3_320},
+        content::quality::{FLAC_16_44, FLAC_24_96, MP3_320},
         dev_server::{MockServer, make_service, make_service_without_auth},
         service_state::QobuzApiService,
     };

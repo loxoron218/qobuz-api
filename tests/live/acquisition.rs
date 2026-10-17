@@ -20,7 +20,7 @@ pub mod setup;
 
 use std::sync::OnceLock;
 
-use qobuz_api::api::content::stream::quality::MP3_320;
+use qobuz_api::api::content::quality::MP3_320;
 
 use crate::{env_var_or, load_env_file};
 
@@ -89,7 +89,7 @@ mod tests {
         tracing::info,
     };
 
-    use qobuz_api::api::content::stream::{FileUrl, quality::MP3_320};
+    use qobuz_api::api::content::{quality::MP3_320, stream::FileUrl};
 
     use crate::{
         acquisition::{
