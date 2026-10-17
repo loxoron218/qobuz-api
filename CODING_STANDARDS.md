@@ -296,5 +296,5 @@ pub fn open<P: AsRef<Path>>(path: P) -> Result<Self, ParseError> { ... }
 - Use `tempfile` for test fixtures.
 - For technical tasks, use deterministic simulation testing.
 - Integration/acceptance tests live in `tests/` and carry a `//!` header that references the
-  relevant spec/FR (e.g., `No-hardware-at-startup acceptance test (FR-030)`).
+  originating GitHub issue / `to-spec` spec (e.g., `No-hardware-at-startup acceptance test (#123)`).
 - Benchmarks live in `benches/` using `criterion`.
