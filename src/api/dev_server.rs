@@ -9,7 +9,7 @@ use std::{
 
 use anyhow::{Result, ensure};
 
-use crate::api::{http_client::ReqwestClient, service::QobuzApiService};
+use crate::api::{http_client::ReqwestClient, service_state::QobuzApiService};
 
 /// Asserts that a search result block contains an empty item list.
 ///
@@ -29,8 +29,8 @@ macro_rules! assert_empty_search {
 #[macro_export]
 macro_rules! assert_empty_search_test {
     ($search_fn:path, $query:expr, $body:expr) => {{
-        let server = $crate::api::fixture::MockServer::start(200, $body)?;
-        let service = $crate::api::fixture::make_service(&server.base_url())?;
+        let server = $crate::api::dev_server::MockServer::start(200, $body)?;
+        let service = $crate::api::dev_server::make_service(&server.base_url())?;
         let rt = Runtime::new()?;
         $crate::assert_empty_search!(rt.block_on($search_fn(&service, $query, None, None)));
     }};
@@ -42,8 +42,8 @@ macro_rules! assert_empty_search_test {
 #[macro_export]
 macro_rules! setup_test {
     ($status:expr, $body:expr, $server:ident, $service:ident, $rt:ident) => {
-        let $server = $crate::api::fixture::MockServer::start($status, $body)?;
-        let $service = $crate::api::fixture::make_service(&$server.base_url())?;
+        let $server = $crate::api::dev_server::MockServer::start($status, $body)?;
+        let $service = $crate::api::dev_server::make_service(&$server.base_url())?;
         let $rt = Runtime::new()?;
     };
 }

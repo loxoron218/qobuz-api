@@ -9,6 +9,8 @@ pub mod discography;
 pub mod mixtape;
 pub mod persistence;
 pub mod playlists;
+pub mod record_media;
+pub mod records;
 pub mod stream;
 pub mod tracks;
 
@@ -19,7 +21,7 @@ use serde::de::DeserializeOwned;
 use crate::{
     api::{
         requests::{RequestAuth, signed_get},
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError::{self, Canceled},
 };
@@ -103,6 +105,10 @@ pub fn push_pagination_params(
 /// # Returns
 ///
 /// The deserialized response of type `T`.
+///
+/// # Errors
+///
+/// Returns a `QobuzApiError` if not authenticated or the signed request fails.
 async fn do_signed_get<T: DeserializeOwned>(
     service: &QobuzApiService,
     endpoint: &str,

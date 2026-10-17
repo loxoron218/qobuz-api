@@ -53,7 +53,7 @@ name = "hot_paths"
 
 [[test]]
 name = "integration"
-path = "tests/integration/stub.rs"
+path = "tests/integration/offline_client.rs"
 
 [[test]]
 name = "live"

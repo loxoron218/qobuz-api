@@ -3,8 +3,8 @@
 use anyhow::{Error, Result, anyhow};
 
 use qobuz_api::api::{
-    content::{albums::Album, artists::Artist},
-    service::QobuzApiService,
+    content::records::{Album, Artist},
+    service_state::QobuzApiService,
 };
 
 /// Finds a track ID by query string.

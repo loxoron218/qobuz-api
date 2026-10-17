@@ -126,6 +126,10 @@ impl HttpClient for ReqwestClient {
     /// Implements [`HttpClient::get`] via the pooled `reqwest` client.
     ///
     /// Encodes the query pairs with `query` and boxes the send future for `dyn` dispatch.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if the HTTP request fails.
     fn get(
         &self,
         url: &str,
@@ -141,6 +145,10 @@ impl HttpClient for ReqwestClient {
     /// Implements [`HttpClient::post_form`] via the pooled `reqwest` client.
     ///
     /// Clones the form pairs into owned strings for `form` and boxes the send future.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if the HTTP request fails.
     fn post_form(
         &self,
         url: &str,
@@ -161,6 +169,10 @@ impl HttpClient for ReqwestClient {
     /// Implements [`HttpClient::get_with_auth`] via the pooled `reqwest` client.
     ///
     /// Attaches `X-User-Auth-Token` and an optional `Range` header to the request.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if the HTTP request fails.
     fn get_with_auth(
         &self,
         url: &str,

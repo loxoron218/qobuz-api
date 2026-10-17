@@ -19,7 +19,7 @@ mod tests {
         tracing::info,
     };
 
-    use qobuz_api::api::service::QobuzApiService;
+    use qobuz_api::api::service_state::QobuzApiService;
 
     use crate::{
         create_authenticated_service, init_logging,

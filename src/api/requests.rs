@@ -82,6 +82,10 @@ fn append_signature(
 /// # Returns
 ///
 /// Parsed JSON response of type `T`.
+///
+/// # Errors
+///
+/// Returns a `QobuzApiError` on HTTP failures or JSON parse errors.
 async fn execute_post<T: DeserializeOwned>(
     client: &dyn HttpClient,
     base_url: &str,

@@ -13,7 +13,7 @@
 
 use anyhow::{Result, anyhow, ensure};
 
-use qobuz_api::api::service::QobuzApiService;
+use qobuz_api::api::service_state::QobuzApiService;
 
 use crate::ensure_env_credentials;
 

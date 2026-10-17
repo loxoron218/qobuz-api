@@ -11,6 +11,8 @@ pub mod requests;
 pub mod response;
 pub mod retrieval;
 pub mod service;
+pub mod service_auth;
+pub mod service_state;
 
 #[cfg(test)]
-pub mod fixture;
+pub mod dev_server;

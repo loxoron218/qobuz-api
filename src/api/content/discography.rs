@@ -12,7 +12,7 @@ use crate::{
         content::{
             artists::get_release_list, bundle::download_album, check_cancel, fetch_with_cancel,
         },
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError::{self, DownloadError},
     metadata::config::MetadataConfig,

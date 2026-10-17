@@ -53,6 +53,10 @@ pub async fn extract_from_web_player() -> Result<(String, String), QobuzApiError
 /// # Returns
 ///
 /// The full URL of the bundle JavaScript file.
+///
+/// # Errors
+///
+/// Returns `QobuzApiError::CredentialsError` if the bundle URL cannot be found in the HTML.
 fn extract_bundle_url(html: &str) -> Result<String, QobuzApiError> {
     let re = Regex::new(r#"src="(/[^"]*bundle[^"]*\.js)""#).map_err(|e| CredentialsError {
         message: format!("Invalid regex: {e}"),
@@ -80,6 +84,10 @@ fn extract_bundle_url(html: &str) -> Result<String, QobuzApiError> {
 /// # Returns
 ///
 /// The extracted `app_id`.
+///
+/// # Errors
+///
+/// Returns `QobuzApiError::CredentialsError` if the production app ID cannot be found.
 fn extract_app_id_from_bundle(js: &str) -> Result<String, QobuzApiError> {
     let re =
         Regex::new(r#"production:\{api:\{appId:"([0-9]+)""#).map_err(|e| CredentialsError {
@@ -115,6 +123,10 @@ fn extract_app_id_from_bundle(js: &str) -> Result<String, QobuzApiError> {
 /// # Returns
 ///
 /// The extracted `app_secret`.
+///
+/// # Errors
+///
+/// Returns `QobuzApiError::CredentialsError` if the seed data cannot be extracted or decoded.
 fn extract_app_secret_from_bundle(js: &str) -> Result<String, QobuzApiError> {
     let seed_timezone_re = Regex::new(
         r#"\):[a-z]\.initialSeed\("(?P<seed>.*?)",window\.utimezone\.(?P<timezone>[a-z]+)\)"#,

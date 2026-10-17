@@ -24,7 +24,7 @@ use crate::{
         http_client::HttpClient,
         requests::{RequestAuth, build_url_with_params, retry_with_backoff},
         response::parse_response,
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError,
     signing::sign_track_file_url,

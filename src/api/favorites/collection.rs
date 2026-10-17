@@ -6,10 +6,10 @@ use {
 };
 
 use crate::api::{
+    dev_server::{MockServer, make_service, make_service_without_auth},
     favorites::{
         add_user_favorites, delete_user_favorites, get_user_favorite_ids, get_user_favorites,
     },
-    fixture::{MockServer, make_service, make_service_without_auth},
 };
 
 macro_rules! assert_favorites_success {

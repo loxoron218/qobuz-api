@@ -4,13 +4,14 @@ use tokio::runtime::Runtime;
 
 use crate::api::{
     content::{
-        albums::{Album, search_albums},
-        artists::{Artist, search_artists},
-        catalog::{ItemSearchResult, SearchResult, search_catalog},
-        playlists::{Playlist, search_playlists},
-        tracks::{Track, search_tracks},
+        albums::search_albums,
+        artists::search_artists,
+        catalog::search_catalog,
+        playlists::search_playlists,
+        records::{Album, Artist, ItemSearchResult, Playlist, SearchResult, Track},
+        tracks::search_tracks,
     },
-    service::QobuzApiService,
+    service_state::QobuzApiService,
 };
 
 impl QobuzApiService {
@@ -96,7 +97,7 @@ impl QobuzApiService {
 mod tests {
     use anyhow::{Result, anyhow, ensure};
 
-    use crate::api::fixture::{MockServer, make_service};
+    use crate::api::dev_server::{MockServer, make_service};
 
     #[test]
     fn search_catalog_delegate_returns_all_groups() -> Result<()> {

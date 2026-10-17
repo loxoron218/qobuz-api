@@ -24,7 +24,7 @@ use {
     tracing_subscriber::{EnvFilter, fmt},
 };
 
-use qobuz_api::{api::service::QobuzApiService, credentials::parse_env_file};
+use qobuz_api::{api::service_state::QobuzApiService, credentials::parse_env_file};
 
 /// Test support imports macro for integration tests.
 #[macro_export]
@@ -35,9 +35,7 @@ macro_rules! test_support_imports {
             tracing::info,
         };
 
-        use qobuz_api::api::content::{
-            albums::Album, artists::Artist, playlists::Playlist, tracks::Track,
-        };
+        use qobuz_api::api::content::records::{Album, Artist, Playlist, Track};
     };
 }
 

@@ -2,7 +2,7 @@
 
 use tracing::warn;
 
-use crate::{api::service::QobuzApiService, metadata::extractor::ComprehensiveMetadata};
+use crate::{api::service_state::QobuzApiService, metadata::extractor::ComprehensiveMetadata};
 
 /// Fetches cover art binary data for a track if a cover art URL is available.
 ///

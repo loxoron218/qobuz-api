@@ -14,14 +14,11 @@ use {
 use crate::{
     api::{
         content::{
-            albums::{Album, get_album},
-            check_cancel, fetch_with_cancel,
-            persistence::save_track_to_disk,
-            stream::get_track_file_url_raw,
-            tracks::get_track,
+            albums::get_album, check_cancel, fetch_with_cancel, persistence::save_track_to_disk,
+            records::Album, stream::get_track_file_url_raw, tracks::get_track,
         },
         requests::{RequestAuth, download_stream},
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError::{self, DownloadError},
     metadata::{
@@ -47,6 +44,10 @@ use crate::{
 /// A tuple of `(track_ids, dir_path)` where:
 /// - `track_ids`: List of track IDs from the album
 /// - `dir_path`: The created output directory path
+///
+/// # Errors
+///
+/// Returns a `QobuzApiError` if the album directory cannot be created.
 fn prepare_album_directory(
     album: &Album,
     output_dir: &Path,
@@ -87,6 +88,10 @@ fn prepare_album_directory(
 /// # Returns
 ///
 /// A vector of paths to the downloaded track files.
+///
+/// # Errors
+///
+/// Returns a `QobuzApiError` if authentication, track download, or file write fails.
 async fn download_album_tracks(
     service: &QobuzApiService,
     track_ids: &[i32],
@@ -203,6 +208,10 @@ async fn download_album_tracks(
 /// # Returns
 ///
 /// `Ok(())` on success.
+///
+/// # Errors
+///
+/// Returns a `QobuzApiError` if track metadata retrieval or embedding fails.
 async fn embed_album_metadata(
     service: &QobuzApiService,
     album: &Album,
@@ -342,6 +351,10 @@ fn warn_if_not_resumed(had_offset: bool, resumed: bool, track_id: i32) {
 /// # Returns
 ///
 /// Cover art image bytes, or `None` if cover art is disabled or unavailable.
+///
+/// # Errors
+///
+/// Returns a `QobuzApiError` if not authenticated.
 async fn download_cover_data(
     service: &QobuzApiService,
     album: &Album,

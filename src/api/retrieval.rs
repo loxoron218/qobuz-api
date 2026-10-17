@@ -16,7 +16,7 @@ use crate::{
             stream::{FileUrl, get_track_file_url},
             tracks::download_track,
         },
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError,
     metadata::config::MetadataConfig,
@@ -241,8 +241,8 @@ mod tests {
 
     use crate::api::{
         content::stream::quality::{FLAC_16_44, FLAC_24_96, MP3_320},
-        fixture::{MockServer, make_service, make_service_without_auth},
-        service::QobuzApiService,
+        dev_server::{MockServer, make_service, make_service_without_auth},
+        service_state::QobuzApiService,
     };
 
     fn authenticated_service_with_dir() -> Result<(QobuzApiService, TempDir)> {

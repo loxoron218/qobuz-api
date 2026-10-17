@@ -1,9 +1,8 @@
 //! Metadata extraction from API models.
 
 use crate::api::content::{
-    albums::{Album, Image},
-    artists::Artist,
-    tracks::Track,
+    record_media::Image,
+    records::{Album, Artist, Track},
 };
 
 /// Simplified album artist info for metadata passing.
@@ -195,8 +194,8 @@ mod tests {
 
     use crate::{
         api::content::{
-            albums::{Album, Image},
-            tracks::Track,
+            record_media::Image,
+            records::{Album, Track},
         },
         metadata::extractor::{best_cover_url, extract_comprehensive_metadata},
     };

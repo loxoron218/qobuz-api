@@ -2,7 +2,7 @@
 
 use std::fmt::{Debug, Formatter, Result};
 
-use crate::api::service::QobuzApiService;
+use crate::api::service_state::QobuzApiService;
 
 impl Debug for QobuzApiService {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {

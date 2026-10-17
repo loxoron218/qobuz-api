@@ -8,9 +8,9 @@ use {
 
 use crate::{
     api::{
-        fixture::{MockServer, SequentialMockServer, make_service},
+        dev_server::{MockServer, SequentialMockServer, make_service},
         requests::{download_stream, retry_with_backoff},
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError,
 };

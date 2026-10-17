@@ -18,9 +18,9 @@ use {
 
 use crate::{
     api::{
-        content::{albums::Album, stream::get_track_file_url},
+        content::{records::Album, stream::get_track_file_url},
         requests::download_stream,
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError::{self, Canceled, DownloadError, HttpError},
 };
@@ -214,7 +214,7 @@ mod tests {
                 },
                 stream::{get_track_file_url, quality::MP3_320},
             },
-            fixture::{MockServer, make_service, make_service_without_auth},
+            dev_server::{MockServer, make_service, make_service_without_auth},
         },
         errors::QobuzApiError::{AuthenticationError, Canceled, DownloadError},
         metadata::extractor::ComprehensiveMetadata,

@@ -3,11 +3,11 @@
 use tokio::runtime::Runtime;
 
 use crate::api::{
-    content::catalog::UserFavorites,
+    content::records::UserFavorites,
     favorites::{
         add_user_favorites, delete_user_favorites, get_user_favorite_ids, get_user_favorites,
     },
-    service::QobuzApiService,
+    service_state::QobuzApiService,
 };
 
 impl QobuzApiService {
@@ -68,7 +68,7 @@ impl QobuzApiService {
 mod tests {
     use anyhow::{Result, ensure};
 
-    use crate::api::fixture::{MockServer, make_service};
+    use crate::api::dev_server::{MockServer, make_service};
 
     #[test]
     fn add_user_favorites_succeeds() -> Result<()> {

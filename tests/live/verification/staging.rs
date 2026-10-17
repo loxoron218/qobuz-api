@@ -15,8 +15,8 @@ use {
 
 use qobuz_api::{
     api::{
-        content::{stream::quality::MP3_320, tracks::Track},
-        service::QobuzApiService,
+        content::{records::Track, stream::quality::MP3_320},
+        service_state::QobuzApiService,
     },
     metadata::{
         config::MetadataConfig, embedder::embed_metadata_in_file,

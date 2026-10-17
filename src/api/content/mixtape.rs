@@ -13,7 +13,7 @@ use crate::{
         content::{
             check_cancel, fetch_with_cancel, playlists::get_playlist, tracks::download_track,
         },
-        service::QobuzApiService,
+        service_state::QobuzApiService,
     },
     errors::QobuzApiError::{self, DownloadError},
     metadata::config::MetadataConfig,

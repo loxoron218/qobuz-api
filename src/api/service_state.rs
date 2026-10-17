@@ -1,0 +1,248 @@
+//! Authenticated service state shared by auth operations and content fetching.
+//!
+//! Holds the [`QobuzApiService`] struct with connection pooling and token
+//! storage. Authentication flows live in
+//! [`service_auth`](crate::api::service_auth). Content modules and the
+//! [`service`](crate::api::service) facade depend downward without cycles.
+
+use std::path::Path;
+
+use {tokio::runtime::Runtime, tracing::info};
+
+use crate::{
+    api::http_client::{HttpClient, ReqwestClient},
+    credentials::{load_app_credentials, save_app_credentials, web::extract_from_web_player},
+    errors::QobuzApiError::{self, AuthenticationError, InitializationError},
+};
+
+/// Base URL for all Qobuz API v0.2 endpoints.
+const BASE_URL: &str = "https://www.qobuz.com/api.json/0.2";
+
+/// Central service for all Qobuz API operations.
+///
+/// Holds authentication state and a shared HTTP client with connection pooling.
+pub struct QobuzApiService {
+    /// API base URL for requests.
+    pub base_url: String,
+    /// Qobuz application ID.
+    pub app_id: String,
+    /// Qobuz application secret.
+    pub app_secret: String,
+    /// User authentication token (set after login).
+    pub user_auth_token: Option<String>,
+    /// HTTP client with connection pooling.
+    pub client: Box<dyn HttpClient>,
+    /// Whether credentials have been refreshed this session.
+    pub credentials_refreshed: bool,
+}
+
+impl QobuzApiService {
+    /// Builds a service with the given credentials and a new HTTP client.
+    ///
+    /// # Arguments
+    ///
+    /// * `app_id` - Qobuz application ID
+    /// * `app_secret` - Qobuz application secret
+    ///
+    /// # Returns
+    ///
+    /// A `QobuzApiService` with the provided credentials.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if credentials are empty or the HTTP client cannot be built.
+    fn build_service(app_id: String, app_secret: String) -> Result<Self, QobuzApiError> {
+        if app_id.is_empty() || app_secret.is_empty() {
+            return Err(InitializationError {
+                message: "app_id and app_secret must be non-empty".to_string(),
+            });
+        }
+
+        let client = ReqwestClient::new(&app_id)?;
+        Ok(Self {
+            base_url: BASE_URL.to_string(),
+            app_id,
+            app_secret,
+            user_auth_token: None,
+            client: Box::new(client),
+            credentials_refreshed: false,
+        })
+    }
+
+    /// Creates a new service instance.
+    ///
+    /// Extracts app credentials from `.env` or the Qobuz web player JS bundle.
+    /// Returns a service with valid `app_id` and `app_secret`.
+    /// `user_auth_token` is `None` (unauthenticated state).
+    ///
+    /// # Returns
+    ///
+    /// A `QobuzApiService` with valid credentials.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if credential extraction or HTTP client creation fails.
+    pub fn new() -> Result<Self, QobuzApiError> {
+        let env_path = Path::new(".env");
+        let (app_id, app_secret) = if let Some(creds) = load_app_credentials(env_path)? {
+            creds
+        } else {
+            info!(path = %env_path.display(), "No .env credentials found, extracting from web player");
+
+            let rt = Runtime::new()?;
+            let (id, secret) = rt.block_on(extract_from_web_player())?;
+
+            save_app_credentials(env_path, &id, &secret)?;
+
+            (id, secret)
+        };
+
+        Self::build_service(app_id, app_secret)
+    }
+
+    /// Creates a service with explicitly provided app credentials.
+    ///
+    /// # Arguments
+    ///
+    /// * `app_id` - Qobuz application ID
+    /// * `app_secret` - Qobuz application secret
+    ///
+    /// # Returns
+    ///
+    /// A `QobuzApiService` with the provided credentials.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if `app_id` or `app_secret` is empty, or HTTP client creation
+    /// fails.
+    pub fn with_credentials(app_id: &str, app_secret: &str) -> Result<Self, QobuzApiError> {
+        Self::build_service(app_id.to_string(), app_secret.to_string())
+    }
+
+    /// Returns the API base URL.
+    ///
+    /// # Returns
+    ///
+    /// A string slice of the base URL.
+    #[must_use]
+    pub fn base_url(&self) -> &str {
+        &self.base_url
+    }
+
+    /// Returns the user auth token or an error if not authenticated.
+    ///
+    /// # Returns
+    ///
+    /// A string slice of the auth token.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError::AuthenticationError` if not yet authenticated.
+    pub fn require_auth_token(&self) -> Result<&str, QobuzApiError> {
+        self.user_auth_token
+            .as_deref()
+            .ok_or_else(|| AuthenticationError {
+                message: "Not authenticated. Call authenticate_with_env() or login() first."
+                    .to_string(),
+            })
+    }
+
+    /// Sets the user auth token.
+    ///
+    /// # Arguments
+    ///
+    /// * `token` - The authentication token to set
+    pub fn set_auth_token(&mut self, token: String) {
+        self.user_auth_token = Some(token);
+    }
+
+    /// Returns a reference to the HTTP client.
+    ///
+    /// # Returns
+    ///
+    /// A `&dyn HttpClient` reference.
+    #[must_use]
+    pub fn http_client(&self) -> &dyn HttpClient {
+        &*self.client
+    }
+
+    /// Returns whether credentials have been refreshed this session.
+    ///
+    /// # Returns
+    ///
+    /// `true` if credentials have been refreshed.
+    #[must_use]
+    pub const fn is_credentials_refreshed(&self) -> bool {
+        self.credentials_refreshed
+    }
+
+    /// Marks credentials as refreshed.
+    pub const fn mark_credentials_refreshed(&mut self) {
+        self.credentials_refreshed = true;
+    }
+
+    /// Returns the app secret.
+    ///
+    /// # Returns
+    ///
+    /// A string slice of the app secret.
+    #[must_use]
+    pub fn app_secret(&self) -> &str {
+        &self.app_secret
+    }
+
+    /// Rebuilds the HTTP client after updating `app_id`.
+    ///
+    /// Use this after changing `app_id` to update the `x-app-id` default header.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or failure.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if HTTP client creation fails.
+    pub fn rebuild_http_client(&mut self) -> Result<(), QobuzApiError> {
+        self.client = ReqwestClient::new(&self.app_id)?.into_boxed();
+        Ok(())
+    }
+
+    /// Returns a cloned `Box<dyn HttpClient>` for use in spawned tasks.
+    ///
+    /// # Returns
+    ///
+    /// A boxed HTTP client suitable for use in async tasks.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `QobuzApiError` if HTTP client creation fails.
+    pub fn http_client_ref(app_id: &str) -> Result<Box<dyn HttpClient>, QobuzApiError> {
+        let client = ReqwestClient::new(app_id)?;
+        Ok(client.into_boxed())
+    }
+}
+
+#[cfg(test)]
+impl QobuzApiService {
+    /// Creates a test service with a mock HTTP client.
+    ///
+    /// # Arguments
+    ///
+    /// * `client` - Boxed HTTP client for test requests.
+    /// * `base_url` - Base URL pointing at the mock server.
+    ///
+    /// # Returns
+    ///
+    /// A `QobuzApiService` configured for tests.
+    #[must_use]
+    pub fn new_test(client: Box<dyn HttpClient>, base_url: &str) -> Self {
+        Self {
+            base_url: base_url.to_string(),
+            app_id: "test-app-id".to_string(),
+            app_secret: "test-app-secret".to_string(),
+            user_auth_token: None,
+            client,
+            credentials_refreshed: false,
+        }
+    }
+}

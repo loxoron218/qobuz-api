@@ -8,7 +8,7 @@ use {
     tracing::info,
 };
 
-use qobuz_api::api::service::QobuzApiService;
+use qobuz_api::api::service_state::QobuzApiService;
 
 use crate::{
     acquisition::{get_download_config, query::find_album_id},

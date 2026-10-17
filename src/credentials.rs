@@ -142,6 +142,10 @@ pub fn save_app_credentials(
 /// # Returns
 ///
 /// `Ok(())` on success.
+///
+/// # Errors
+///
+/// Returns a `QobuzApiError` if file permissions cannot be set.
 fn set_file_permissions(path: &Path) -> Result<(), QobuzApiError> {
     #[cfg(unix)]
     {
