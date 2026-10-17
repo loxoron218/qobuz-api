@@ -813,7 +813,7 @@ dependencies = [
 
 [[package]]
 name = "qobuz-api"
-version = "3.0.0"
+version = "4.0.0"
 dependencies = [
  "anyhow",
  "base64",

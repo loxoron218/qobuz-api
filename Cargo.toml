@@ -6,7 +6,7 @@ keywords = ["qobuz", "music", "streaming", "api", "audio"]
 license = "GPL-3.0-or-later"
 name = "qobuz-api"
 repository = "https://github.com/loxoron218/qobuz-api"
-version = "3.0.0"
+version = "4.0.0"
 
 [dependencies]
 anyhow = { version = "1.0.104", default-features = false }
