@@ -120,7 +120,6 @@ impl QobuzApiService {
     /// * `format_id` - Quality format ID
     /// * `output_dir` - Directory to save the downloaded file
     /// * `config` - Optional metadata configuration for tagging
-    /// * `cancel` - Optional cancellation flag checked during the download
     ///
     /// # Returns
     ///

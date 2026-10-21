@@ -90,6 +90,7 @@ pub async fn get_track(service: &QobuzApiService, track_id: i32) -> Result<Track
 /// * `format_id` - Quality format ID
 /// * `output_dir` - Directory to save the downloaded file
 /// * `config` - Optional metadata configuration for tagging
+/// * `cancel` - Optional cancellation flag checked during the download
 ///
 /// # Returns
 ///

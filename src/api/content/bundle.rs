@@ -250,6 +250,7 @@ async fn embed_album_metadata(
 /// * `output_dir` - Base output directory for downloaded files
 /// * `config` - Optional metadata configuration for tagging
 /// * `concurrency` - Maximum number of concurrent downloads
+/// * `cancel` - Optional cancellation flag checked during the download
 ///
 /// # Returns
 ///
